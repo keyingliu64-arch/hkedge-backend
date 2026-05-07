@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKEdge eSign | 企业电子签章平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background-color: #f0f2f5; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+
+        /* Language Toggle */
+        .lang-toggle { position: fixed; top: 12px; right: 24px; z-index: 9999; display: flex; gap: 3px; background: rgba(255,255,255,.95); border-radius: 20px; padding: 3px; box-shadow: 0 2px 10px rgba(0,0,0,.15); }
+        .lang-btn { padding: 5px 14px; border: none; border-radius: 18px; cursor: pointer; font-size: 12px; font-weight: 600; transition: .2s; background: transparent; color: #666; }
+        .lang-btn.active { background: #0d6efd; color: #fff; }
+
+        /* Login */
+        .login-page { display:flex; align-items:center; justify-content:center; min-height:100vh;
+            background: linear-gradient(135deg,#0a2e5c 0%,#1a5276 40%,#2980b9 100%); }
+        .login-card { display:flex; background:#fff; border-radius:16px; overflow:hidden;
+            box-shadow:0 24px 80px rgba(0,0,0,.3); width:860px; max-width:95vw; }
+        .login-left { flex:1.1; background:linear-gradient(160deg,#0d3b66,#1a6fb5);
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            padding:48px 36px; color:#fff; }
+        .login-left h1 { font-size:26px; letter-spacing:1px; margin-bottom:8px; }
+        .login-left .subtitle { font-size:13px; opacity:.75; text-align:center; line-height:1.7; max-width:280px; }
+        .login-features { margin-top:28px; width:100%; max-width:260px; }
+        .login-features .feat { display:flex; align-items:center; gap:10px; margin-bottom:12px; font-size:13px; opacity:.85; }
+        .login-features .feat-icon { width:32px; height:32px; background:rgba(255,255,255,.1);
+            border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .login-right { flex:1; padding:48px 40px; display:flex; flex-direction:column; justify-content:center; }
+        .login-right h2 { text-align:center; margin-bottom:28px; color:#0d3b66; font-size:22px; }
+        .ig-wrap { position:relative; margin-bottom:16px; }
+        .ig-wrap .ig-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#aaa; font-size:14px; }
+        .ig-wrap input { width:100%; padding:11px 14px 11px 40px; border:1.5px solid #e0e0e0;
+            border-radius:10px; font-size:14px; transition:.2s; outline:none; }
+        .ig-wrap input:focus { border-color:#0d6efd; box-shadow:0 0 0 3px rgba(13,110,253,.08); }
+        .btn-login { width:100%; padding:13px; background:linear-gradient(135deg,#0d3b66,#1a6fb5);
+            color:#fff; border:none; border-radius:10px; font-size:15px; font-weight:600;
+            cursor:pointer; transition:.2s; letter-spacing:.5px; }
+        .btn-login:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(13,59,102,.3); }
+
+        /* Sidebar */
+        .sidebar { background: linear-gradient(180deg,#0a2e5c 0%,#0d3b66 50%,#154c79 100%); }
+        .nav-item { color: rgba(255,255,255,.65); transition: all .15s; border-left: 3px solid transparent; }
+        .nav-item:hover { color:#fff; background:rgba(255,255,255,.07); }
+        .nav-active { color:#fff !important; background:rgba(255,255,255,.12) !important;
+            font-weight:600; border-left-color:#3498db !important; }
+
+        /* Toast */
+        #toast { position:fixed; top:24px; left:50%; transform:translateX(-50%) translateY(-20px);
+            padding:10px 28px; border-radius:6px; z-index:99999; display:flex; align-items:center;
+            gap:8px; font-size:14px; box-shadow:0 6px 20px rgba(0,0,0,.12);
+            transition:.3s; opacity:0; pointer-events:none; }
+        #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+        #toast.success { background:#f6ffed; border:1px solid #b7eb8f; color:#389e0d; }
+        #toast.error { background:#fff2f0; border:1px solid #ffccc7; color:#cf1322; }
+        #toast.info { background:#e6f7ff; border:1px solid #91d5ff; color:#0958d9; }
+
+        /* Stepper */
+        .stepper { display:flex; align-items:center; justify-content:center; gap:0; padding:0 20px; }
+        .step { display:flex; align-items:center; }
+        .step-circle { width:32px; height:32px; border-radius:50%; border:2px solid #d9d9d9;
+            display:flex; align-items:center; justify-content:center; font-size:13px;
+            font-weight:600; color:#999; background:#fff; transition:.2s; flex-shrink:0; }
+        .step.active .step-circle { border-color:#0d6efd; color:#fff; background:#0d6efd; }
+        .step.done .step-circle { border-color:#198754; color:#fff; background:#198754; }
+        .step-label { font-size:12px; margin-left:8px; color:#999; white-space:nowrap; }
+        .step.active .step-label { color:#0d6efd; font-weight:600; }
+        .step.done .step-label { color:#198754; }
+        .step-line { width:50px; height:2px; background:#e0e0e0; margin:0 8px; }
+        .step-line.done { background:#198754; }
+
+        /* View contract modal */
+        .sig-box-view { width:160px; height:60px; border:2px dashed #d9d9d9; border-radius:6px;
+            display:flex; align-items:center; justify-content:center; background:#fafafa; }
+        .sig-box-view.signed { border-style:solid; border-color:#198754; background:#f0fdf4; }
+
+        .view-section { display:none; }
+        .view-section.active { display:block; }
+    </style>
+    <script>
+        let lang = localStorage.getItem('hkedge_lang') || 'zh-CN';
+        const L = {
+        'zh-CN': {
+            login_title: '账户登录',
+            platform_desc: '粤港澳大湾区跨境医疗数据签署平台',
+            feature_contract: '电子合约签署',
+            feature_compliance: '跨境数据合规',
+            feature_audit: '完整审计追踪',
+            feature_legal: '法律效力保障',
+            remember_me: '记住我',
+            forgot_password: '忘记密码？',
+            demo_account: '默认账号：admin / admin123',
+            view_guide: '查看使用指南',
+            btn_login: '登 录'
+        },
+        'zh-TW': {
+            login_title: '帳戶登錄',
+            platform_desc: '粤港澳大灣區跨境醫療數據簽署平台',
+            feature_contract: '電子合約簽署',
+            feature_compliance: '跨境數據合規',
+            feature_audit: '完整審計追蹤',
+            feature_legal: '法律效力保障',
+            remember_me: '記住我',
+            forgot_password: '忘記密碼？',
+            demo_account: '預設帳號：admin / admin123',
+            view_guide: '查看使用指南',
+            btn_login: '登 錄'
+        },
+        'en': {
+            login_title: 'Account Login',
+            platform_desc: 'GBA Cross-border Medical Data Signing Platform',
+            feature_contract: 'Electronic Contract Signing',
+            feature_compliance: 'Cross-border Compliance',
+            feature_audit: 'Complete Audit Trail',
+            feature_legal: 'Legal Protection',
+            remember_me: 'Remember me',
+            forgot_password: 'Forgot password?',
+            demo_account: 'Demo: admin / admin123',
+            view_guide: 'View Guide',
+            btn_login: 'LOGIN'
+        }};
+
+        function t(key) { return L[lang][key] || key; }
+
+        function setLang(l) {
+            lang = l;
+            localStorage.setItem('hkedge_lang', l);
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (L[l][k]) el.textContent = L[l][k];
+            });
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('lang' + l)?.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('hkedge_lang');
+            if (saved) {
+                lang = saved;
+                setLang(saved);
+            }
+        });
+    </script>
+</head>
+<body>
+
+<!-- Toast -->
+<div id="toast"><span id="toastIcon"></span><span id="toastMsg"></span></div>
+
+<!-- Language Toggle -->
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('zh-CN')" id="langZh-CN">简体</button>
+  <button class="lang-btn" onclick="setLang('zh-TW')" id="langZh-TW">繁體</button>
+  <button class="lang-btn" onclick="setLang('en')" id="langEn">EN</button>
+</div>
+
+<!-- ========== LOGIN ========== -->
+<div id="loginPage" class="login-page">
+  <div class="login-card">
+    <div class="login-left">
+      <div style="width:72px;height:72px;background:rgba(255,255,255,.15);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:16px;">
+        <i class="fas fa-shield-alt"></i>
+      </div>
+      <h1>HKEdge eSign</h1>
+      <p class="subtitle" data-i18n="platform_desc">粤港澳大湾区跨境医疗数据签署平台</p>
+      <div class="login-features">
+        <div class="feat"><div class="feat-icon"><i class="fas fa-lock text-xs"></i></div><span data-i18n="feature_contract">电子合约签署</span></div>
+        <div class="feat"><div class="feat-icon"><i class="fas fa-globe text-xs"></i></div><span data-i18n="feature_compliance">跨境数据合规</span></div>
+        <div class="feat"><div class="feat-icon"><i class="fas fa-history text-xs"></i></div><span data-i18n="feature_audit">完整审计追踪</span></div>
+        <div class="feat"><div class="feat-icon"><i class="fas fa-gavel text-xs"></i></div><span data-i18n="feature_legal">法律效力保障</span></div>
+      </div>
+    </div>
+    <div class="login-right">
+      <h2 data-i18n="login_title">账户登录</h2>
+      <form id="loginForm">
+        <div class="ig-wrap">
+          <span class="ig-icon"><i class="fas fa-user"></i></span>
+          <input type="text" id="loginUsername" placeholder="请输入用户名" required>
+        </div>
+        <div class="ig-wrap">
+          <span class="ig-icon"><i class="fas fa-lock"></i></span>
+          <input type="password" id="loginPassword" placeholder="请输入密码" required>
+        </div>
+        <div class="flex items-center justify-between text-xs text-gray-500 mb-5">
+          <label class="flex items-center gap-1 cursor-pointer">
+            <input type="checkbox" checked> <span data-i18n="remember_me">记住我</span>
+          </label>
+          <a href="#" class="text-blue-600 hover:underline" data-i18n="forgot_password">忘记密码？</a>
+        </div>
+        <button type="submit" id="btnLogin" class="btn-login">
+          <i class="fas fa-sign-in-alt mr-2"></i> <span data-i18n="btn_login">登 录</span>
+        </button>
+      </form>
+      <p class="text-xs text-center text-gray-400 mt-5" data-i18n="demo_account">默认账号：admin / admin123</p>
+      <div class="text-center mt-4">
+        <a href="guide.html" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm inline-flex items-center gap-1">
+          <i class="fas fa-book"></i> <span data-i18n="view_guide">查看使用指南</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="mainView" class="hidden flex h-screen overflow-hidden">
+
+  <!-- Sidebar -->
+  <aside class="w-56 sidebar flex flex-col shrink-0 shadow-xl z-20">
+    <div class="h-16 flex items-center justify-center gap-3 border-b border-white/10">
+      <div class="w-8 h-8 bg-blue-500 rounded text-white flex items-center justify-center font-bold text-lg shadow">H</div>
+      <span class="text-white text-base font-bold tracking-wide">HKEdge eSign</span>
+    </div>
+    <!-- User info -->
+    <div class="text-center py-4 px-3 border-b border-white/10">
+      <div id="sbAvatar" class="w-11 h-11 rounded-full mx-auto mb-2 flex items-center justify-center font-bold text-lg text-white"
+           style="background:linear-gradient(135deg,#3498db,#2ecc71)">A</div>
+      <div id="sbUsername" class="text-white text-sm font-semibold">-</div>
+      <div id="sbRole" class="text-white/50 text-xs mt-0.5">-</div>
+      <div class="flex items-center justify-center gap-1 mt-1">
+        <span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span>
+        <span class="text-green-400 text-xs">在线</span>
+      </div>
+    </div>
+    <nav class="flex-1 py-2 overflow-y-auto">
+      <a href="#" onclick="switchMenu('home')" id="menu-home" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-home w-4 text-center"></i> 首页
+      </a>
+      <div class="text-white/30 text-xs px-5 py-2 font-semibold uppercase tracking-widest">合约管理</div>
+      <a href="#" onclick="switchMenu('contracts')" id="menu-contracts" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-folder-open w-4 text-center"></i> 合约列表
+      </a>
+      <a href="#" onclick="switchMenu('initiate')" id="menu-initiate" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-pen-nib w-4 text-center"></i> 发起签署
+      </a>
+      <div class="text-white/30 text-xs px-5 py-2 font-semibold uppercase tracking-widest">医院管理</div>
+      <a href="#" onclick="switchMenu('hospitals')" id="menu-hospitals" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-hospital w-4 text-center"></i> 医院列表
+      </a>
+      <a href="#" onclick="switchMenu('data-spaces')" id="menu-data-spaces" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-database w-4 text-center"></i> 数据空间
+      </a>
+      <a href="#" onclick="switchMenu('data-flows')" id="menu-data-flows" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-exchange-alt w-4 text-center"></i> 数据流管理
+      </a>
+      <div class="text-white/30 text-xs px-5 py-2 font-semibold uppercase tracking-widest">患者服务</div>
+      <a href="#" onclick="switchMenu('patients')" id="menu-patients" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-user-injured w-4 text-center"></i> 患者管理
+      </a>
+      <a href="#" onclick="switchMenu('visits')" id="menu-visits" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-file-medical w-4 text-center"></i> 就诊记录
+      </a>
+      <a href="#" onclick="switchMenu('qrcode')" id="menu-qrcode" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-qrcode w-4 text-center"></i> 二维码签到
+      </a>
+      <div class="text-white/30 text-xs px-5 py-2 font-semibold uppercase tracking-widest">系统管理</div>
+      <a href="#" onclick="switchMenu('users')" id="menu-users" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-users w-4 text-center"></i> 用户管理
+      </a>
+      <a href="#" onclick="switchMenu('audit')" id="menu-audit" class="nav-item flex items-center px-5 py-3 text-sm gap-3">
+        <i class="fas fa-history w-4 text-center"></i> 审计日志
+      </a>
+    </nav>
+    <div class="p-4 border-t border-white/10 space-y-2">
+      <a href="guide.html" target="_blank" class="w-full text-white/50 hover:text-white hover:bg-white/10 py-2 px-4 rounded text-sm flex items-center justify-center gap-2 transition block text-center">
+        <i class="fas fa-book"></i> 使用指南
+      </a>
+      <button onclick="logout()" class="w-full text-white/50 hover:text-white hover:bg-white/10 py-2 px-4 rounded text-sm flex items-center justify-center gap-2 transition">
+        <i class="fas fa-sign-out-alt"></i> 退出登录
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Topbar -->
+    <header class="h-14 bg-white shadow-sm flex items-center justify-between px-6 shrink-0 z-10 border-b border-gray-100">
+      <div class="flex items-center text-gray-500 text-sm">
+        <i class="fas fa-bars mr-4 cursor-pointer hover:text-blue-500"></i>
+        <span class="text-gray-400">HKEdge eSign</span>
+        <i class="fas fa-chevron-right text-xs mx-2 text-gray-300"></i>
+        <span id="breadcrumb" class="text-gray-700 font-medium">首页</span>
+      </div>
+      <div class="flex items-center gap-4 text-gray-500 text-sm">
+        <button onclick="refreshCurrentView()" class="flex items-center gap-1.5 border border-gray-200 px-3 py-1.5 rounded-md text-xs hover:border-blue-400 hover:text-blue-500 transition">
+          <i class="fas fa-sync-alt"></i> 刷新
+        </button>
+        <div class="flex items-center gap-2">
+          <div id="topAvatar" class="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm">A</div>
+          <span id="topUsername" class="text-gray-700 font-medium">-</span>
+          <span class="text-gray-300">|</span>
+          <span id="topRole" class="text-gray-400 text-xs">-</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-6" id="main-content">
+
+      <!-- HOME -->
+      <div id="view-home" class="view-section">
+        <div class="grid grid-cols-4 gap-5 mb-6">
+          <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-yellow-400 cursor-pointer hover:shadow-md transition" onclick="switchMenu('contracts')">
+            <div class="text-gray-400 text-xs mb-1 uppercase tracking-wide">待处理合约</div>
+            <div class="text-3xl font-bold text-yellow-500" id="dash-pending">0</div>
+            <div class="text-xs text-gray-400 mt-1" id="dash-pending-percent">0%</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-400 cursor-pointer hover:shadow-md transition" onclick="switchMenu('contracts')">
+            <div class="text-gray-400 text-xs mb-1 uppercase tracking-wide">已完成合约</div>
+            <div class="text-3xl font-bold text-green-500" id="dash-completed">0</div>
+            <div class="text-xs text-gray-400 mt-1" id="dash-completed-percent">0%</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-400 cursor-pointer hover:shadow-md transition" onclick="switchMenu('visits')">
+            <div class="text-gray-400 text-xs mb-1 uppercase tracking-wide">就诊记录</div>
+            <div class="text-3xl font-bold text-blue-500" id="dash-visits">0</div>
+            <div class="text-xs text-gray-400 mt-1">本月新增</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-purple-400 cursor-pointer hover:shadow-md transition">
+            <div class="text-gray-400 text-xs mb-1 uppercase tracking-wide">理赔总额</div>
+            <div class="text-3xl font-bold text-purple-500" id="dash-claims-amt">0</div>
+            <div class="text-xs text-gray-400 mt-1" id="dash-claims-count">0 笔理赔</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-orange-400 cursor-pointer hover:shadow-md transition" onclick="switchMenu('patients')">
+            <div class="text-gray-400 text-xs mb-1 uppercase tracking-wide">患者总数</div>
+            <div class="text-3xl font-bold text-orange-500" id="dash-patients">0</div>
+            <div class="text-xs text-gray-400 mt-1">累计注册</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-cyan-400 cursor-pointer hover:shadow-md transition" onclick="switchMenu('hospitals')">
+            <div class="text-gray-400 text-xs mb-1 uppercase tracking-wide">合作医院</div>
+            <div class="text-3xl font-bold text-cyan-500" id="dash-hospitals">0</div>
+            <div class="text-xs text-gray-400 mt-1" id="dash-hospitals-space">0 个数据空间</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-rose-400 cursor-pointer hover:shadow-md transition" onclick="switchMenu('qrcode')">
+            <div class="text-gray-400 text-xs mb-1 uppercase tracking-wide">二维码签到</div>
+            <div class="text-3xl font-bold text-rose-500" id="dash-qrcode">0</div>
+            <div class="text-xs text-gray-400 mt-1">本月签到</div>
+          </div>
+          <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-indigo-400 cursor-pointer hover:shadow-md transition">
+            <div class="text-gray-400 text-xs mb-1 uppercase tracking-wide">理赔成功率</div>
+            <div class="text-3xl font-bold text-indigo-500" id="dash-success-rate">0%</div>
+            <div class="text-xs text-gray-400 mt-1">平均结算周期</div>
+          </div>
+        </div>
+
+        <div id="dash-role-section"></div>
+
+        <div class="grid grid-cols-2 gap-5 mt-5">
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-bolt text-yellow-400"></i> 快捷操作</h3>
+            <div id="dash-quick-actions" class="flex flex-col gap-3"></div>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-sm">
+            <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-clock text-blue-400"></i> 最近动态</h3>
+            <div id="recentActivity" class="text-sm text-gray-500 space-y-2 leading-relaxed"></div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- CONTRACTS -->
+      <div id="view-contracts" class="view-section">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">合约列表</h3>
+            <button onclick="switchMenu('initiate')" id="btn-initiate-contract" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-plus"></i> 发起签署
+            </button>
+          </div>
+          <!-- Filter bar -->
+          <div class="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-3 flex-wrap">
+            <label class="text-xs text-gray-500 font-medium">关键词</label>
+            <input type="text" id="filterKeyword" placeholder="医院名称 / 编码..." class="border border-gray-200 rounded-md px-3 py-1.5 text-xs w-44 focus:border-blue-400 outline-none">
+            <label class="text-xs text-gray-500 font-medium">状态</label>
+            <select id="filterStatus" class="border border-gray-200 rounded-md px-3 py-1.5 text-xs focus:border-blue-400 outline-none">
+              <option value="">全部</option>
+              <option value="Pending Hospital">待医院签署</option>
+              <option value="Pending Insurance">待保险签署</option>
+              <option value="Completed">已完成</option>
+            </select>
+            <button onclick="fetchContracts()" class="bg-blue-600 text-white px-3 py-1.5 rounded-md text-xs hover:bg-blue-700 transition flex items-center gap-1">
+              <i class="fas fa-search"></i> 查询
+            </button>
+            <button onclick="document.getElementById('filterKeyword').value='';document.getElementById('filterStatus').value='';fetchContracts()" class="border border-gray-200 text-gray-500 px-3 py-1.5 rounded-md text-xs hover:border-gray-400 transition">
+              重置
+            </button>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-medium w-10"><input type="checkbox"></th>
+                <th class="px-5 py-3 font-medium">医院编码</th>
+                <th class="px-5 py-3 font-medium">医院名称</th>
+                <th class="px-5 py-3 font-medium">保险方</th>
+                <th class="px-5 py-3 font-medium">状态</th>
+                <th class="px-5 py-3 font-medium">发起时间</th>
+                <th class="px-5 py-3 font-medium text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="contractsTable" class="text-sm text-gray-600 divide-y divide-gray-100"></tbody>
+          </table>
+          <div id="contractsEmpty" class="hidden py-16 text-center text-gray-400">
+            <i class="fas fa-folder-open text-4xl mb-3 opacity-30"></i>
+            <p>暂无合约数据</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- INITIATE (3-step stepper) -->
+      <div id="view-initiate" class="view-section max-w-2xl mx-auto mt-4">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden border-t-4 border-blue-600">
+          <div class="px-8 py-6 border-b border-gray-100">
+            <h2 class="text-lg font-bold text-gray-800">发起新签署流程</h2>
+            <p class="text-sm text-gray-400 mt-1">选择医疗机构，发送具有法律效力的电子合约</p>
+          </div>
+          <!-- Stepper -->
+          <div class="px-8 py-5 bg-gray-50 border-b border-gray-100">
+            <div class="stepper">
+              <div class="step active" id="step1">
+                <div class="step-circle">1</div>
+                <span class="step-label">选择机构</span>
+              </div>
+              <div class="step-line" id="line1"></div>
+              <div class="step" id="step2">
+                <div class="step-circle">2</div>
+                <span class="step-label">确认信息</span>
+              </div>
+              <div class="step-line" id="line2"></div>
+              <div class="step" id="step3">
+                <div class="step-circle">3</div>
+                <span class="step-label">发送邀请</span>
+              </div>
+            </div>
+          </div>
+          <!-- Step panels -->
+          <div class="px-8 py-6">
+            <div id="stepPanel1">
+              <div class="space-y-5">
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-2">1. 选择医疗机构 (甲方) <span class="text-red-500">*</span></label>
+                  <select id="initHospitalCode" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:border-blue-500 outline-none" required>
+                    <option value="" disabled selected>请选择医院编码...</option>
+                  </select>
+                  <div id="hospitalInfo" class="mt-2 p-3 bg-blue-50 rounded-lg text-sm text-blue-800 hidden"></div>
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-2">2. 保险机构 (乙方)</label>
+                  <select id="initInsurance" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm bg-gray-50 outline-none" readonly>
+                    <option value="AIA Hong Kong (友邦)" selected>AIA Hong Kong (友邦)</option>
+                  </select>
+                  <p class="text-xs text-gray-400 mt-1">当前以 AIA 企业管理员身份操作</p>
+                </div>
+              </div>
+              <div class="flex justify-end mt-8">
+                <button onclick="goStep(2)" class="px-6 py-2.5 bg-blue-600 rounded-lg text-white text-sm font-bold shadow hover:bg-blue-700 transition flex items-center gap-2">
+                  下一步 <i class="fas fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+            <div id="stepPanel2" class="hidden">
+              <div class="bg-gray-50 rounded-xl p-5 space-y-3 text-sm">
+                <h3 class="font-bold text-gray-700 mb-3">请确认以下合约信息</h3>
+                <div class="flex justify-between"><span class="text-gray-500">甲方（医疗机构）</span><span id="confirmHospital" class="font-medium text-gray-800">-</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">医院编码</span><span id="confirmCode" class="font-mono text-blue-600">-</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">乙方（保险公司）</span><span class="font-medium text-gray-800">AIA Hong Kong (友邦)</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">合约类型</span><span class="font-medium text-gray-800">医疗直赔服务合作协议</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">签署流程</span><span class="font-medium text-gray-800">医院签署 → 保险公司签署</span></div>
+              </div>
+              <div class="flex justify-between mt-8">
+                <button onclick="goStep(1)" class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 text-sm hover:bg-gray-50 transition flex items-center gap-2">
+                  <i class="fas fa-arrow-left"></i> 上一步
+                </button>
+                <button onclick="goStep(3)" class="px-6 py-2.5 bg-blue-600 rounded-lg text-white text-sm font-bold shadow hover:bg-blue-700 transition flex items-center gap-2">
+                  下一步 <i class="fas fa-arrow-right"></i>
+                </button>
+              </div>
+            </div>
+            <div id="stepPanel3" class="hidden">
+              <div class="space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+                  <i class="fas fa-info-circle mr-2"></i> 系统将向医院发送签署邀请，医院签署后保险公司将收到通知。
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-gray-700 mb-2">通知方式</label>
+                  <div class="space-y-2">
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input type="radio" name="notifyMethod" value="direct" checked> <span class="text-sm">直接启动签署流程（不发送通知）</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-blue-200 bg-blue-50 rounded-lg cursor-pointer">
+                      <input type="radio" name="notifyMethod" value="sms"> <span class="text-sm font-medium text-blue-700">通过 SMS 短消息发送</span>
+                    </label>
+                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                      <input type="radio" name="notifyMethod" value="email"> <span class="text-sm">通过电子邮件发送</span>
+                    </label>
+                  </div>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+                  <i class="fas fa-clock mr-1"></i> 系统将每天自动提醒尚未签署的签署方，最多持续 5 天
+                </div>
+              </div>
+              <div id="initSuccessMsg" class="hidden bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2 mt-4">
+                <i class="fas fa-check-circle text-lg"></i> 签署邀请已成功发送！正在跳转到合约列表...
+              </div>
+              <div class="flex justify-between mt-8">
+                <button onclick="goStep(2)" class="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 text-sm hover:bg-gray-50 transition flex items-center gap-2">
+                  <i class="fas fa-arrow-left"></i> 上一步
+                </button>
+                <button onclick="submitInitiate()" id="btnInitiate" class="px-6 py-2.5 bg-blue-600 rounded-lg text-white text-sm font-bold shadow hover:bg-blue-700 transition flex items-center gap-2">
+                  <i class="fas fa-paper-plane"></i> 发送签署邀请
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- HOSPITALS -->
+      <div id="view-hospitals" class="view-section">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">医院管理</h3>
+            <button onclick="showAddHospitalModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-plus"></i> 添加医院
+            </button>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-medium w-10"><input type="checkbox"></th>
+                <th class="px-5 py-3 font-medium">医院编码</th>
+                <th class="px-5 py-3 font-medium">医院名称</th>
+                <th class="px-5 py-3 font-medium">英文名称</th>
+                <th class="px-5 py-3 font-medium">数据空间</th>
+                <th class="px-5 py-3 font-medium">状态</th>
+                <th class="px-5 py-3 font-medium text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="hospitalsTable" class="text-sm text-gray-600 divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DATA SPACES -->
+      <div id="view-data-spaces" class="view-section">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">数据空间管理</h3>
+            <button onclick="showAddDataSpaceModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-plus"></i> 创建空间
+            </button>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-medium">空间ID</th>
+                <th class="px-5 py-3 font-medium">空间名称</th>
+                <th class="px-5 py-3 font-medium">描述</th>
+                <th class="px-5 py-3 font-medium">创建时间</th>
+                <th class="px-5 py-3 font-medium text-right">关联医院</th>
+              </tr>
+            </thead>
+            <tbody id="dataSpacesTable" class="text-sm text-gray-600 divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- DATA FLOWS -->
+      <div id="view-data-flows" class="view-section">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">数据流管理</h3>
+            <button onclick="showAddDataFlowModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-plus"></i> 添加数据流
+            </button>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-medium">医院编码</th>
+                <th class="px-5 py-3 font-medium">医院名称</th>
+                <th class="px-5 py-3 font-medium">保险机构</th>
+                <th class="px-5 py-3 font-medium">签署流</th>
+                <th class="px-5 py-3 font-medium">数据同步</th>
+                <th class="px-5 py-3 font-medium">发起方</th>
+                <th class="px-5 py-3 font-medium">存储位置</th>
+              </tr>
+            </thead>
+            <tbody id="dataFlowsTable" class="text-sm text-gray-600 divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PATIENTS -->
+      <div id="view-patients" class="view-section">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">患者管理</h3>
+            <button onclick="showAddPatientModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-plus"></i> 添加患者
+            </button>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-medium w-10"><input type="checkbox"></th>
+                <th class="px-5 py-3 font-medium">患者ID</th>
+                <th class="px-5 py-3 font-medium">姓名</th>
+                <th class="px-5 py-3 font-medium">性别</th>
+                <th class="px-5 py-3 font-medium">出生日期</th>
+                <th class="px-5 py-3 font-medium">保单号</th>
+                <th class="px-5 py-3 font-medium">保险公司</th>
+                <th class="px-5 py-3 font-medium">状态</th>
+                <th class="px-5 py-3 font-medium text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="patientsTable" class="text-sm text-gray-600 divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VISITS -->
+      <div id="view-visits" class="view-section">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100">
+            <h3 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">就诊记录</h3>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-medium">就诊ID</th>
+                <th class="px-5 py-3 font-medium">患者姓名</th>
+                <th class="px-5 py-3 font-medium">医院</th>
+                <th class="px-5 py-3 font-medium">就诊日期</th>
+                <th class="px-5 py-3 font-medium">科室</th>
+                <th class="px-5 py-3 font-medium">诊断结果</th>
+                <th class="px-5 py-3 font-medium">费用金额</th>
+                <th class="px-5 py-3 font-medium">报销金额</th>
+                <th class="px-5 py-3 font-medium">状态</th>
+              </tr>
+            </thead>
+            <tbody id="visitsTable" class="text-sm text-gray-600 divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- QRCODE -->
+      <div id="view-qrcode" class="view-section">
+        <div class="grid grid-cols-3 gap-5 mb-5">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-qrcode text-blue-500"></i> 生成签到二维码</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">选择医院</label>
+                <select id="qrHospitalCode" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400">
+                  <option value="H001">H001 - 香港大学深圳医院</option>
+                  <option value="H002">H002 - 北京协和医院</option>
+                  <option value="H003">H003 - 南方医科大学深圳医院</option>
+                </select>
+              </div>
+              <button onclick="generateQRCode()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow transition text-sm">
+                <i class="fas fa-qrcode mr-2"></i> 生成二维码
+              </button>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-user-check text-green-500"></i> 扫码签到</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">二维码内容</label>
+                <input type="text" id="qrCodeInput" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-blue-400" placeholder="请输入二维码内容">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1">患者ID</label>
+                <input type="text" id="qrPatientId" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400" placeholder="如: P001">
+              </div>
+              <button onclick="checkinWithQR()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-lg shadow transition text-sm">
+                <i class="fas fa-check-circle mr-2"></i> 确认签到
+              </button>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-barcode text-purple-500"></i> 当前二维码</h3>
+            <div id="currentQRCode" class="bg-gray-50 rounded-xl p-6 text-center border border-gray-100">
+              <div class="text-4xl mb-3">📱</div>
+              <div id="qrContent" class="font-mono text-xs text-gray-400">点击上方按钮生成</div>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100">
+            <h3 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">签到历史记录</h3>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-medium">二维码</th>
+                <th class="px-5 py-3 font-medium">医院</th>
+                <th class="px-5 py-3 font-medium">患者ID</th>
+                <th class="px-5 py-3 font-medium">患者姓名</th>
+                <th class="px-5 py-3 font-medium">状态</th>
+                <th class="px-5 py-3 font-medium">签到时间</th>
+              </tr>
+            </thead>
+            <tbody id="qrHistoryTable" class="text-sm text-gray-600 divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AUDIT -->
+      <div id="view-audit" class="view-section">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100">
+            <h3 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">审计日志</h3>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-medium">时间</th>
+                <th class="px-5 py-3 font-medium">操作人</th>
+                <th class="px-5 py-3 font-medium">角色</th>
+                <th class="px-5 py-3 font-medium">操作类型</th>
+                <th class="px-5 py-3 font-medium">医院编码</th>
+                <th class="px-5 py-3 font-medium">详情</th>
+              </tr>
+            </thead>
+            <tbody id="auditLogsTable" class="text-sm text-gray-600 divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div id="view-users" class="view-section">
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="text-base font-bold text-gray-800 border-l-4 border-blue-600 pl-3">用户管理</h3>
+            <button onclick="showAddUserModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm transition shadow-sm flex items-center gap-1.5">
+              <i class="fas fa-plus"></i> 创建用户
+            </button>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-5 py-3 font-medium">用户名</th>
+                <th class="px-5 py-3 font-medium">角色</th>
+                <th class="px-5 py-3 font-medium">所属机构</th>
+                <th class="px-5 py-3 font-medium">状态</th>
+                <th class="px-5 py-3 font-medium">创建时间</th>
+              </tr>
+            </thead>
+            <tbody id="usersTable" class="text-sm text-gray-600 divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PLACEHOLDER -->
+      <div id="view-placeholder" class="view-section">
+        <div class="bg-white rounded-xl shadow-sm min-h-64 flex flex-col items-center justify-center text-gray-400 py-20">
+          <i class="fas fa-tools text-5xl mb-4 opacity-20"></i>
+          <h2 class="text-base font-medium text-gray-500 mb-1">功能开发中</h2>
+          <p class="text-sm">此模块正在建设中，敬请期待</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ========== MODAL OVERLAY ========== -->
+<div id="modal-overlay" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex justify-center items-center z-50">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden" id="modal-content"></div>
+</div>
+
+<!-- ========== VIEW CONTRACT MODAL ========== -->
+<div id="viewContractModal" class="hidden fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex justify-center items-center z-50">
+  <div class="bg-white rounded-xl shadow-2xl overflow-hidden" style="width:96vw;max-width:900px;max-height:90vh;display:flex;flex-direction:column;">
+    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center" style="background:linear-gradient(135deg,#0d3b66,#1a6fb5)">
+      <h3 class="text-white font-bold text-base flex items-center gap-2"><i class="fas fa-file-contract"></i> 查看合约详情</h3>
+      <button onclick="closeViewContract()" class="text-white/70 hover:text-white text-xl w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/15 transition">×</button>
+    </div>
+    <div class="flex overflow-hidden flex-1" style="min-height:0">
+      <!-- Left meta panel -->
+      <div class="w-56 border-r border-gray-100 p-5 flex-shrink-0 bg-gray-50 overflow-y-auto">
+        <div class="mb-1 text-xs text-gray-400 uppercase tracking-wide">合约编号</div>
+        <div id="vc-id" class="text-sm text-blue-600 font-medium mb-4">-</div>
+        <div class="mb-1 text-xs text-gray-400 uppercase tracking-wide">合同状态</div>
+        <div id="vc-status" class="mb-4">-</div>
+        <div class="mb-1 text-xs text-gray-400 uppercase tracking-wide">医疗机构</div>
+        <div id="vc-hospital" class="text-sm font-medium text-gray-700 mb-4">-</div>
+        <div class="mb-1 text-xs text-gray-400 uppercase tracking-wide">保险公司</div>
+        <div id="vc-insurance" class="text-sm font-medium text-gray-700 mb-4">-</div>
+        <div class="mb-1 text-xs text-gray-400 uppercase tracking-wide">发起时间</div>
+        <div id="vc-created" class="text-xs text-gray-500 mb-5">-</div>
+        <div class="border-t border-gray-200 pt-4">
+          <div class="text-xs font-bold text-gray-600 mb-3">签署人列表</div>
+          <table class="w-full text-xs">
+            <thead><tr><th class="text-left text-gray-400 font-normal pb-1">签署方</th><th class="text-left text-gray-400 font-normal pb-1">状态</th></tr></thead>
+            <tbody id="vc-signers"></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Document preview -->
+      <div class="flex-1 overflow-y-auto bg-gray-200 p-6 flex justify-center">
+        <div class="bg-white shadow-lg w-full max-w-xl p-14 relative">
+          <div id="vc-stamp" class="hidden absolute top-16 right-16 border-4 border-red-500 text-red-500 opacity-20 rounded-full w-36 h-36 flex items-center justify-center -rotate-12 pointer-events-none">
+            <div class="text-center"><div class="font-bold text-lg tracking-widest border-b-2 border-red-500 pb-1 mb-1">HKEdge</div><div class="font-bold text-xs">VALIDATED</div></div>
+          </div>
+          <h1 class="text-xl font-bold text-center mb-6 pb-4 border-b-2 border-gray-800">医疗直赔服务合作协议</h1>
+          <div class="text-sm leading-relaxed text-gray-800 space-y-4">
+            <div class="flex justify-between font-bold text-sm">
+              <p>甲方（医疗机构）：<span id="vc-doc-hospital" class="text-blue-700 border-b border-blue-700">-</span></p>
+              <p>乙方（保险公司）：<span id="vc-doc-insurance" class="text-blue-700 border-b border-blue-700">-</span></p>
+            </div>
+            <p class="text-xs text-gray-400">医院编码：<span id="vc-doc-code" class="font-mono">-</span></p>
+            <p>鉴于甲方为合法设立并存续的医疗机构，乙方为合法设立并存续的保险公司，双方本着平等互利、共同发展的原则，就患者医疗费用直接结算（以下简称"直赔"）事宜，达成如下协议：</p>
+            <h3 class="font-bold">一、合作内容</h3>
+            <p>1. 乙方同意将甲方纳入其医疗保险直赔网络。乙方承保的客户在甲方就诊时，符合保险责任范围内的医疗费用，由乙方直接向甲方支付。</p>
+            <p>2. 合同限额：<span id="vc-doc-text" class="bg-yellow-100 px-1 font-mono text-xs">标准门诊限额条款</span></p>
+            <h3 class="font-bold">二、签名确认</h3>
+            <p>双方授权代表在此协议上使用数字签名即视为同意上述所有条款。本电子协议与纸质协议具有同等法律效力。</p>
+            <div class="mt-10 flex justify-between items-end">
+              <div>
+                <p class="text-xs text-gray-400 mb-2">甲方（医疗机构）签署：</p>
+                <div id="vc-sig-hospital" class="sig-box-view w-44 h-16"><span class="text-gray-300 text-xs">等待签署</span></div>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-2">乙方（保险公司）签署：</p>
+                <div id="vc-sig-insurance" class="sig-box-view w-44 h-16"><span class="text-gray-300 text-xs">等待签署</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+      <button onclick="closeViewContract()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 text-sm hover:bg-gray-100 transition flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i> 返回
+      </button>
+      <div class="flex gap-3">
+        <button onclick="showToast('info','审计轨迹功能演示中...')" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 text-sm hover:bg-gray-100 transition flex items-center gap-2">
+          <i class="fas fa-history"></i> 审计轨迹
+        </button>
+        <button id="vc-sign-btn" class="hidden px-5 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition flex items-center gap-2">
+          <i class="fas fa-pen"></i> 前往签署
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentUserInfo = null;
+let currentMenuId = 'home';
+let currentStep = 1;
+let allContracts = [];
+
+const menuTitles = {
+  'home':'首页','initiate':'发起签署','contracts':'合约管理',
+  'hospitals':'医院管理','data-spaces':'数据空间','data-flows':'数据流管理',
+  'patients':'患者管理','visits':'就诊记录','qrcode':'二维码签到',
+  'audit':'审计日志','users':'用户管理'
+};
+
+// ===== TOAST =====
+function showToast(type, msg) {
+  const el = document.getElementById('toast');
+  const icons = { success:'<i class="fas fa-check-circle"></i>', error:'<i class="fas fa-times-circle"></i>', info:'<i class="fas fa-info-circle"></i>' };
+  el.className = type;
+  document.getElementById('toastIcon').innerHTML = icons[type] || '';
+  document.getElementById('toastMsg').textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ===== AUTH =====
+async function checkAuth() {
+  try {
+    const res = await fetch('/api/auth/user');
+    const json = await res.json();
+    if (json.code === '10000') { currentUserInfo = json.data; showMainView(); }
+    else showLoginView();
+  } catch { showLoginView(); }
+}
+
+function showLoginView() {
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('mainView').classList.add('hidden');
+}
+
+function showMainView() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('mainView').classList.remove('hidden');
+  const u = currentUserInfo;
+  const roleLabel = getRoleLabel(u.role);
+  const initial = u.username.charAt(0).toUpperCase();
+  document.getElementById('sbAvatar').textContent = initial;
+  document.getElementById('sbUsername').textContent = u.username;
+  document.getElementById('sbRole').textContent = roleLabel;
+  document.getElementById('topAvatar').textContent = initial;
+  document.getElementById('topUsername').textContent = u.username;
+  document.getElementById('topRole').textContent = roleLabel;
+
+  const sidebarConfig = {
+    admin: ['home','contracts','initiate','hospitals','data-spaces','data-flows','patients','visits','qrcode','users','audit'],
+    insurance: ['home','contracts','initiate','hospitals','data-flows','patients','visits','audit'],
+    hospital: ['home','contracts','hospitals','data-flows','visits','qrcode','users']
+  };
+  const allowed = sidebarConfig[u.role] || sidebarConfig.admin;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    const menuId = el.id.replace('menu-', '');
+    el.style.display = allowed.includes(menuId) ? '' : 'none';
+  });
+
+  switchMenu('home');
+}
+
+function getRoleLabel(role) {
+  return { 'admin':'平台管理员', 'insurance':'保司用户', 'hospital':'医院用户' }[role] || role;
+}
+
+function canDo(action) {
+  const perms = {
+    'initiate_contract': ['admin','insurance'],
+    'add_hospital': ['admin','insurance'],
+    'add_data_space': ['admin'],
+    'add_data_flow': ['admin','insurance'],
+    'add_patient': ['admin','insurance'],
+    'add_user': ['admin','hospital'],
+    'migrate_space': ['admin']
+  };
+  return (perms[action] || []).includes(currentUserInfo?.role);
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+async function login() {
+  const username = document.getElementById('loginUsername').value;
+  const password = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('btnLogin');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 登录中...';
+  try {
+    const res = await fetch('/api/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ username, password })
+    });
+    const json = await res.json();
+    if (json.code === '10000') { currentUserInfo = json.data; showMainView(); }
+    else { showToast('error', json.msg || '登录失败'); }
+  } catch { showToast('error', '网络连接异常'); }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> 登 录'; }
+}
+
+function logout() {
+  fetch('/api/auth/logout', { method:'POST' });
+  currentUserInfo = null;
+  showLoginView();
+}
+
+// ===== NAVIGATION =====
+function switchMenu(menuId) {
+  currentMenuId = menuId;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('nav-active'));
+  const menuEl = document.getElementById('menu-' + menuId);
+  if (menuEl) menuEl.classList.add('nav-active');
+  document.getElementById('breadcrumb').textContent = menuTitles[menuId] || menuId;
+  document.querySelectorAll('.view-section').forEach(el => { el.style.display = 'none'; el.classList.remove('active'); });
+
+  const viewMap = {
+    'home': () => { show('view-home'); fetchDashboard(); },
+    'contracts': () => { show('view-contracts'); fetchContracts(); },
+    'initiate': () => { show('view-initiate'); loadHospitalsForInitiate(); resetStepper(); },
+    'hospitals': () => { show('view-hospitals'); fetchHospitals(); },
+    'data-spaces': () => { show('view-data-spaces'); fetchDataSpaces(); },
+    'data-flows': () => { show('view-data-flows'); fetchDataFlows(); },
+    'audit': () => { show('view-audit'); fetchAuditLogs(); },
+    'users': () => { show('view-users'); fetchUsers(); },
+    'patients': () => { show('view-patients'); fetchPatients(); },
+    'visits': () => { show('view-visits'); fetchVisits(); },
+    'qrcode': () => { show('view-qrcode'); fetchQRHistory(); },
+  };
+  (viewMap[menuId] || (() => show('view-placeholder')))();
+}
+
+function show(id) {
+  const el = document.getElementById(id);
+  if (el) { el.style.display = 'block'; el.classList.add('active'); }
+}
+
+function refreshCurrentView() { switchMenu(currentMenuId); showToast('info', '已刷新'); }
+
+// ===== STEPPER =====
+function resetStepper() {
+  currentStep = 1;
+  renderStepper();
+  ['stepPanel1','stepPanel2','stepPanel3'].forEach((id,i) => {
+    document.getElementById(id).classList.toggle('hidden', i !== 0);
+  });
+}
+
+function renderStepper() {
+  for (let i = 1; i <= 3; i++) {
+    const s = document.getElementById('step' + i);
+    s.classList.remove('active','done');
+    if (i < currentStep) s.classList.add('done');
+    else if (i === currentStep) s.classList.add('active');
+  }
+  for (let i = 1; i <= 2; i++) {
+    const l = document.getElementById('line' + i);
+    l.classList.toggle('done', i < currentStep);
+  }
+}
+
+function goStep(n) {
+  if (n === 2) {
+    const code = document.getElementById('initHospitalCode').value;
+    if (!code) { showToast('error', '请先选择医疗机构'); return; }
+    const sel = document.getElementById('initHospitalCode');
+    const opt = sel.options[sel.selectedIndex];
+    document.getElementById('confirmHospital').textContent = opt.text.split(' - ')[1] || opt.text;
+    document.getElementById('confirmCode').textContent = code;
+  }
+  currentStep = n;
+  renderStepper();
+  ['stepPanel1','stepPanel2','stepPanel3'].forEach((id,i) => {
+    document.getElementById(id).classList.toggle('hidden', i + 1 !== n);
+  });
+}
+
+// ===== CONTRACTS =====
+async function fetchContracts() {
+  const btn = document.getElementById('btn-initiate-contract');
+  if (btn) btn.style.display = canDo('initiate_contract') ? '' : 'none';
+  try {
+    const res = await fetch('/api/admin/contracts');
+    const json = await res.json();
+    allContracts = json.data || [];
+    renderContractsTable(allContracts);
+  } catch { showToast('error', '加载合约失败'); }
+}
+
+function renderContractsTable(data) {
+  const keyword = (document.getElementById('filterKeyword')?.value || '').toLowerCase();
+  const statusFilter = document.getElementById('filterStatus')?.value || '';
+  const filtered = data.filter(item => {
+    const matchKw = !keyword || item.hospital_name?.toLowerCase().includes(keyword) || item.hospital_code?.toLowerCase().includes(keyword);
+    const matchStatus = !statusFilter || item.status === statusFilter;
+    return matchKw && matchStatus;
+  });
+
+  const tbody = document.getElementById('contractsTable');
+  const empty = document.getElementById('contractsEmpty');
+  let actionCount = 0, waitingCount = 0, completedCount = 0;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    tbody.innerHTML = filtered.map(item => {
+      const date = new Date(item.created_at).toLocaleString('zh-CN', { hour12:false });
+      let statusHtml = '';
+      if (item.status === 'Pending Hospital') {
+        actionCount++;
+        statusHtml = `<span class="bg-yellow-50 text-yellow-600 border border-yellow-200 px-2 py-0.5 rounded text-xs font-bold">待医院签署</span>`;
+      } else if (item.status === 'Pending Insurance') {
+        waitingCount++;
+        statusHtml = `<span class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded text-xs font-bold">待保险签署</span>`;
+      } else {
+        completedCount++;
+        statusHtml = `<span class="bg-green-50 text-green-600 border border-green-200 px-2 py-0.5 rounded text-xs font-bold"><i class="fas fa-check-circle mr-1"></i>已完成</span>`;
+      }
+      return `<tr class="hover:bg-blue-50/50 transition-colors">
+        <td class="px-5 py-3.5"><input type="checkbox"></td>
+        <td class="px-5 py-3.5 font-mono text-blue-600 text-xs font-bold">${item.hospital_code}</td>
+        <td class="px-5 py-3.5 font-medium text-gray-900">${item.hospital_name}</td>
+        <td class="px-5 py-3.5 text-gray-600">${item.insurance_company}</td>
+        <td class="px-5 py-3.5">${statusHtml}</td>
+        <td class="px-5 py-3.5 text-xs text-gray-400">${date}</td>
+        <td class="px-5 py-3.5 text-right flex items-center justify-end gap-2">
+          <button onclick="openViewContract(${item.id})" class="bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 px-3 py-1 rounded text-xs transition">
+            <i class="fas fa-eye mr-1"></i>查看
+          </button>
+          ${item.status !== 'Completed' ? `<a href="/sign.html?id=${item.id}" class="bg-blue-600 text-white hover:bg-blue-700 px-3 py-1 rounded text-xs font-bold transition"><i class="fas fa-pen mr-1"></i>签署</a>` : ''}
+        </td>
+      </tr>`;
+    }).join('');
+  }
+  document.getElementById('dash-action').textContent = actionCount;
+  document.getElementById('dash-waiting').textContent = waitingCount;
+  document.getElementById('dash-completed').textContent = completedCount;
+}
+
+// ===== VIEW CONTRACT MODAL =====
+async function openViewContract(id) {
+  try {
+    const res = await fetch(`/api/admin/contracts/${id}`);
+    const json = await res.json();
+    if (json.code !== '10000') { showToast('error', '加载失败'); return; }
+    const c = json.data;
+    document.getElementById('vc-id').textContent = '#' + c.id;
+    document.getElementById('vc-hospital').textContent = c.hospital_name;
+    document.getElementById('vc-insurance').textContent = c.insurance_company;
+    document.getElementById('vc-created').textContent = new Date(c.created_at).toLocaleString('zh-CN');
+    document.getElementById('vc-doc-hospital').textContent = c.hospital_name;
+    document.getElementById('vc-doc-insurance').textContent = c.insurance_company;
+    document.getElementById('vc-doc-code').textContent = c.hospital_code;
+    document.getElementById('vc-doc-text').textContent = c.contract_text ? c.contract_text.substring(0,80)+'...' : '标准门诊限额条款';
+
+    let statusHtml = '';
+    if (c.status === 'Pending Hospital') statusHtml = `<span class="bg-yellow-50 text-yellow-600 border border-yellow-200 px-2 py-0.5 rounded text-xs font-bold">待医院签署</span>`;
+    else if (c.status === 'Pending Insurance') statusHtml = `<span class="bg-blue-50 text-blue-600 border border-blue-200 px-2 py-0.5 rounded text-xs font-bold">待保险签署</span>`;
+    else statusHtml = `<span class="bg-green-50 text-green-600 border border-green-200 px-2 py-0.5 rounded text-xs font-bold"><i class="fas fa-check-circle mr-1"></i>已完成</span>`;
+    document.getElementById('vc-status').innerHTML = statusHtml;
+
+    document.getElementById('vc-signers').innerHTML = `
+      <tr><td class="py-1 text-gray-600">${c.hospital_name}</td><td class="py-1">${c.hospital_signature ? '<span class="text-green-600">✅ 已签署</span>' : '<span class="text-gray-400">⏳ 未签署</span>'}</td></tr>
+      <tr><td class="py-1 text-gray-600">${c.insurance_company}</td><td class="py-1">${c.insurance_signature ? '<span class="text-green-600">✅ 已签署</span>' : '<span class="text-gray-400">⏳ 未签署</span>'}</td></tr>
+    `;
+
+    const hospBox = document.getElementById('vc-sig-hospital');
+    const insBox = document.getElementById('vc-sig-insurance');
+    if (c.hospital_signature) {
+      hospBox.innerHTML = `<img src="${c.hospital_signature}" class="max-h-full max-w-full object-contain p-1">`;
+      hospBox.classList.add('signed');
+    } else { hospBox.innerHTML = '<span class="text-gray-300 text-xs">等待签署</span>'; hospBox.classList.remove('signed'); }
+    if (c.insurance_signature) {
+      insBox.innerHTML = `<img src="${c.insurance_signature}" class="max-h-full max-w-full object-contain p-1">`;
+      insBox.classList.add('signed');
+    } else { insBox.innerHTML = '<span class="text-gray-300 text-xs">等待签署</span>'; insBox.classList.remove('signed'); }
+
+    const stamp = document.getElementById('vc-stamp');
+    if (c.status === 'Completed') stamp.classList.remove('hidden'); else stamp.classList.add('hidden');
+
+    const signBtn = document.getElementById('vc-sign-btn');
+    if (c.status !== 'Completed') {
+      signBtn.classList.remove('hidden');
+      signBtn.onclick = () => { closeViewContract(); window.location.href = `/sign.html?id=${c.id}`; };
+    } else { signBtn.classList.add('hidden'); }
+
+    document.getElementById('viewContractModal').classList.remove('hidden');
+  } catch { showToast('error', '加载合约详情失败'); }
+}
+
+function closeViewContract() {
+  document.getElementById('viewContractModal').classList.add('hidden');
+}
+
+// ===== DASHBOARD =====
+async function fetchDashboard() {
+  try {
+    const res = await fetch('/api/admin/dashboard');
+    const json = await res.json();
+    const d = json.data;
+    const s = d.summary;
+    const role = currentUserInfo.role;
+
+    document.getElementById('dash-pending').textContent = s.contracts_pending;
+    document.getElementById('dash-completed').textContent = s.contracts_completed;
+    document.getElementById('dash-visits').textContent = s.visits_total;
+    document.getElementById('dash-claims-amt').textContent = s.claims_amount > 0 ? `$${s.claims_amount.toLocaleString()}` : '0';
+    document.getElementById('dash-pending-percent').textContent = `${s.contracts_pending_percent || 0}%`;
+    document.getElementById('dash-completed-percent').textContent = `${s.contracts_completed_percent || 0}%`;
+    document.getElementById('dash-claims-count').textContent = `${s.claims_total || 0} 笔理赔`;
+    document.getElementById('dash-patients').textContent = s.patients_total || 0;
+    document.getElementById('dash-hospitals').textContent = s.hospitals_total || 0;
+    document.getElementById('dash-hospitals-space').textContent = `${s.data_spaces_total || 0} 个数据空间`;
+    document.getElementById('dash-qrcode').textContent = s.qrcode_checkins || 0;
+    document.getElementById('dash-success-rate').textContent = `${s.claims_success_rate || 0}%`;
+
+    // Role-specific section
+    const roleSection = document.getElementById('dash-role-section');
+    if (role === 'hospital') {
+      roleSection.innerHTML = `
+        <div class="bg-white p-6 rounded-xl shadow-sm">
+          <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-upload text-blue-400"></i> 出站数据概览 (Outbound Data)</h3>
+          <div class="grid grid-cols-3 gap-4 mb-4">
+            <div class="bg-blue-50 p-3 rounded-lg text-center"><div class="text-xs text-gray-500 mb-1">数据流</div><div class="text-lg font-bold text-blue-600">${s.data_flows}</div></div>
+            <div class="bg-green-50 p-3 rounded-lg text-center"><div class="text-xs text-gray-500 mb-1">已结算理赔</div><div class="text-lg font-bold text-green-600">${s.claims_total}</div></div>
+            <div class="bg-purple-50 p-3 rounded-lg text-center"><div class="text-xs text-gray-500 mb-1">关联保司</div><div class="text-lg font-bold text-purple-600">${d.connected_entities?.length || 0}</div></div>
+          </div>
+          ${d.connected_entities?.length ? `<div class="text-xs text-gray-500">关联保险公司: ${d.connected_entities.join(', ')}</div>` : ''}
+          ${renderRecentTable('最近就诊记录', d.recent_visits, ['patient_name','department','visit_date','amount'], ['患者','科室','日期','金额'])}
+        </div>`;
+    } else if (role === 'insurance') {
+      roleSection.innerHTML = `
+        <div class="bg-white p-6 rounded-xl shadow-sm">
+          <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-download text-green-400"></i> 入站数据概览 (Inbound Data)</h3>
+          <div class="grid grid-cols-3 gap-4 mb-4">
+            <div class="bg-blue-50 p-3 rounded-lg text-center"><div class="text-xs text-gray-500 mb-1">数据流</div><div class="text-lg font-bold text-blue-600">${s.data_flows}</div></div>
+            <div class="bg-green-50 p-3 rounded-lg text-center"><div class="text-xs text-gray-500 mb-1">已结算理赔</div><div class="text-lg font-bold text-green-600">${s.claims_total}</div></div>
+            <div class="bg-purple-50 p-3 rounded-lg text-center"><div class="text-xs text-gray-500 mb-1">关联医院</div><div class="text-lg font-bold text-purple-600">${d.connected_entities?.length || 0}</div></div>
+          </div>
+          ${d.connected_entities?.length ? `<div class="text-xs text-gray-500 mb-3">关联医院: ${d.connected_entities.map(h => h.hospital_name || h).join(', ')}</div>` : ''}
+          ${renderRecentTable('最近理赔记录', d.recent_claims, ['user_name','hospital_name','category','total_amount','status'], ['患者','医院','类型','金额','状态'])}
+        </div>`;
+    } else {
+      roleSection.innerHTML = `
+        <div class="bg-white p-6 rounded-xl shadow-sm">
+          <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2"><i class="fas fa-chart-bar text-indigo-400"></i> 系统概览</h3>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="bg-blue-50 p-3 rounded-lg text-center"><div class="text-xs text-gray-500 mb-1">数据流配置</div><div class="text-lg font-bold text-blue-600">${s.data_flows}</div></div>
+            <div class="bg-green-50 p-3 rounded-lg text-center"><div class="text-xs text-gray-500 mb-1">理赔笔数</div><div class="text-lg font-bold text-green-600">${s.claims_total}</div></div>
+            <div class="bg-orange-50 p-3 rounded-lg text-center"><div class="text-xs text-gray-500 mb-1">合约总数</div><div class="text-lg font-bold text-orange-600">${s.contracts_total}</div></div>
+          </div>
+        </div>`;
+    }
+
+    // Quick actions (role-aware)
+    const qa = document.getElementById('dash-quick-actions');
+    let actions = '';
+    if (canDo('initiate_contract')) {
+      actions += `<button onclick="switchMenu('initiate')" class="flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-sm"><i class="fas fa-pen-nib"></i> 发起新签署</button>`;
+    }
+    actions += `<button onclick="switchMenu('contracts')" class="flex items-center gap-3 px-4 py-3 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:border-blue-400 hover:text-blue-600 transition"><i class="fas fa-folder-open"></i> 查看所有合约</button>`;
+    if (role === 'hospital') {
+      actions += `<button onclick="switchMenu('qrcode')" class="flex items-center gap-3 px-4 py-3 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:border-blue-400 hover:text-blue-600 transition"><i class="fas fa-qrcode"></i> 二维码签到</button>`;
+    }
+    qa.innerHTML = actions;
+
+    // Recent activity
+    const recent = document.getElementById('recentActivity');
+    const rc = d.recent_contracts;
+    if (rc.length > 0) {
+      recent.innerHTML = rc.map(c => {
+        const statusText = c.status === 'Completed' ? '已完成签署' : c.status === 'Pending Hospital' ? '等待医院签署' : '等待保险签署';
+        const color = c.status === 'Completed' ? 'text-green-600' : 'text-yellow-600';
+        return `<div class="flex items-center gap-2 py-1.5 border-b border-gray-50 last:border-0">
+          <span class="w-1.5 h-1.5 rounded-full ${c.status === 'Completed' ? 'bg-green-400' : 'bg-yellow-400'} flex-shrink-0"></span>
+          <span class="text-gray-700 flex-1">${c.hospital_name}</span>
+          <span class="text-xs ${color}">${statusText}</span>
+        </div>`;
+      }).join('');
+    } else {
+      recent.innerHTML = '<p class="text-gray-400 text-xs">暂无动态</p>';
+    }
+  } catch(e) { console.error('Dashboard load failed', e); }
+}
+
+function renderRecentTable(title, rows, fields, headers) {
+  if (!rows || rows.length === 0) return `<div class="text-xs text-gray-400 mt-2">${title}: 暂无数据</div>`;
+  let html = `<div class="mt-3"><div class="text-xs font-bold text-gray-600 mb-2">${title}</div><table class="w-full text-xs"><thead><tr>${headers.map(h => `<th class="text-left text-gray-400 font-normal pb-2 pr-3">${h}</th>`).join('')}</tr></thead><tbody>`;
+  rows.forEach(r => {
+    html += '<tr class="border-t border-gray-50">';
+    fields.forEach(f => { html += `<td class="py-2 pr-3 text-gray-600">${r[f] ?? '-'}</td>`; });
+    html += '</tr>';
+  });
+  return html + '</tbody></table></div>';
+}
+
+// ===== INITIATE =====
+async function loadHospitalsForInitiate() {
+  try {
+    const res = await fetch('/api/admin/hospitals');
+    const json = await res.json();
+    const select = document.getElementById('initHospitalCode');
+    select.innerHTML = '<option value="" disabled selected>请选择医院编码...</option>';
+    (json.data || []).forEach(h => {
+      const opt = document.createElement('option');
+      opt.value = h.hospital_code;
+      opt.textContent = `${h.hospital_code} - ${h.hospital_name}`;
+      opt.dataset.name = h.hospital_name;
+      opt.dataset.nameEn = h.hospital_name_en || '';
+      opt.dataset.space = h.data_space_id || '';
+      select.appendChild(opt);
+    });
+    select.onchange = (e) => {
+      const opt = e.target.options[e.target.selectedIndex];
+      const info = document.getElementById('hospitalInfo');
+      info.classList.remove('hidden');
+      info.innerHTML = `<div class="flex justify-between"><span>中文名称：</span><span class="font-medium">${opt.dataset.name}</span></div>
+        <div class="flex justify-between mt-1"><span>英文名称：</span><span class="font-medium">${opt.dataset.nameEn || '-'}</span></div>
+        <div class="flex justify-between mt-1"><span>所属空间：</span><span class="font-medium">${opt.dataset.space || '-'}</span></div>`;
+    };
+  } catch { showToast('error', '加载医院列表失败'); }
+}
+
+async function submitInitiate() {
+  const hospital_code = document.getElementById('initHospitalCode').value;
+  const insurance = document.getElementById('initInsurance').value;
+  const btn = document.getElementById('btnInitiate');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 发送中...';
+  try {
+    const res = await fetch('/api/admin/contracts', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ hospital_code, insurance_company: insurance, notify_method: document.querySelector('input[name="notifyMethod"]:checked')?.value || 'direct' })
+    });
+    const json = await res.json();
+    if (json.code === '10000') {
+      document.getElementById('initSuccessMsg').classList.remove('hidden');
+      showToast('success', '签署邀请已成功发送！');
+      setTimeout(() => switchMenu('contracts'), 1500);
+    } else {
+      showToast('error', json.msg || '发送失败');
+    }
+  } catch { showToast('error', '网络连接异常，请重试'); }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i> 发送签署邀请'; }
+}
+
+
+// ===== HOSPITALS =====
+async function fetchHospitals() {
+  try {
+    const res = await fetch('/api/admin/hospitals');
+    const json = await res.json();
+    const tbody = document.getElementById('hospitalsTable');
+    if (!json.data || json.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="py-16 text-center text-gray-400">暂无医院数据</td></tr>`; return;
+    }
+    tbody.innerHTML = json.data.map(h => `
+      <tr class="hover:bg-blue-50/50 transition-colors">
+        <td class="px-5 py-3.5"><input type="checkbox"></td>
+        <td class="px-5 py-3.5 font-mono text-blue-600 font-bold text-xs">${h.hospital_code}</td>
+        <td class="px-5 py-3.5 font-medium">${h.hospital_name}</td>
+        <td class="px-5 py-3.5 text-sm text-gray-500">${h.hospital_name_en || '-'}</td>
+        <td class="px-5 py-3.5 text-sm">${h.data_space_id || '-'}</td>
+        <td class="px-5 py-3.5">
+          <span class="${h.status === 'active' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'} border px-2 py-0.5 rounded text-xs font-bold">
+            ${h.status === 'active' ? '启用' : '停用'}
+          </span>
+        </td>
+        <td class="px-5 py-3.5 text-right">
+          <button onclick="showMigrateModal('${h.hospital_code}','${h.hospital_name}')" class="text-blue-600 hover:text-blue-800 text-xs mr-3">迁移空间</button>
+          <button onclick="showToast('info','编辑功能开发中')" class="text-gray-500 hover:text-gray-700 text-xs">编辑</button>
+        </td>
+      </tr>`).join('');
+  } catch { showToast('error', '加载医院列表失败'); }
+}
+
+async function fetchDataSpaces() {
+  try {
+    const res = await fetch('/api/admin/data-spaces');
+    const json = await res.json();
+    const tbody = document.getElementById('dataSpacesTable');
+    if (!json.data || json.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="py-16 text-center text-gray-400">暂无数据空间</td></tr>`; return;
+    }
+    tbody.innerHTML = json.data.map(s => `
+      <tr class="hover:bg-blue-50/50 transition-colors">
+        <td class="px-5 py-3.5 font-mono font-bold text-xs">${s.space_id}</td>
+        <td class="px-5 py-3.5 font-medium">${s.space_name}</td>
+        <td class="px-5 py-3.5 text-sm text-gray-500">${s.description || '-'}</td>
+        <td class="px-5 py-3.5 text-xs text-gray-400">${new Date(s.created_at).toLocaleString('zh-CN')}</td>
+        <td class="px-5 py-3.5 text-right"><span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-xs">--</span></td>
+      </tr>`).join('');
+  } catch { showToast('error', '加载数据空间失败'); }
+}
+
+async function fetchDataFlows() {
+  try {
+    const res = await fetch('/api/admin/data-flows');
+    const json = await res.json();
+    const tbody = document.getElementById('dataFlowsTable');
+    if (!json.data || json.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="py-16 text-center text-gray-400">暂无数据流配置</td></tr>`; return;
+    }
+    tbody.innerHTML = json.data.map(f => `
+      <tr class="hover:bg-blue-50/50 transition-colors">
+        <td class="px-5 py-3.5 font-mono text-xs">${f.hospital_code}</td>
+        <td class="px-5 py-3.5">${f.hospital_name || '-'}</td>
+        <td class="px-5 py-3.5">${f.insurance_company}</td>
+        <td class="px-5 py-3.5"><span class="${f.sign_flow_enabled ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'} border px-2 py-0.5 rounded text-xs">${f.sign_flow_enabled ? '开启' : '关闭'}</span></td>
+        <td class="px-5 py-3.5"><span class="${f.data_sync_enabled ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'} border px-2 py-0.5 rounded text-xs">${f.data_sync_enabled ? '开启' : '关闭'}</span></td>
+        <td class="px-5 py-3.5">${f.sign_initiator || '-'}</td>
+        <td class="px-5 py-3.5">${f.storage_location || '-'}</td>
+      </tr>`).join('');
+  } catch { showToast('error', '加载数据流失败'); }
+}
+
+async function fetchAuditLogs() {
+  try {
+    const res = await fetch('/api/admin/audit-logs');
+    const json = await res.json();
+    const tbody = document.getElementById('auditLogsTable');
+    if (!json.data || json.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="py-16 text-center text-gray-400">暂无日志记录</td></tr>`; return;
+    }
+    tbody.innerHTML = json.data.map(log => `
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-5 py-3.5 text-xs text-gray-400">${new Date(log.created_at).toLocaleString('zh-CN')}</td>
+        <td class="px-5 py-3.5 font-medium">${log.username}</td>
+        <td class="px-5 py-3.5">${getRoleLabel(log.role)}</td>
+        <td class="px-5 py-3.5"><span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded text-xs">${log.action}</span></td>
+        <td class="px-5 py-3.5 font-mono text-xs">${log.hospital_code || '-'}</td>
+        <td class="px-5 py-3.5 text-sm">${log.detail}</td>
+      </tr>`).join('');
+  } catch { showToast('error', '加载审计日志失败'); }
+}
+
+async function fetchUsers() {
+  try {
+    const res = await fetch('/api/admin/users');
+    const json = await res.json();
+    const tbody = document.getElementById('usersTable');
+    if (!json.data || json.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="py-16 text-center text-gray-400">暂无用户数据</td></tr>`; return;
+    }
+    tbody.innerHTML = json.data.map(u => `
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-5 py-3.5 font-medium">${u.username}</td>
+        <td class="px-5 py-3.5">${getRoleLabel(u.role)}</td>
+        <td class="px-5 py-3.5">${u.company_id || u.hospital_code || '-'}</td>
+        <td class="px-5 py-3.5"><span class="${u.status === 'active' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'} border px-2 py-0.5 rounded text-xs">${u.status === 'active' ? '启用' : '停用'}</span></td>
+        <td class="px-5 py-3.5 text-xs text-gray-400">${new Date(u.created_at).toLocaleString('zh-CN')}</td>
+      </tr>`).join('');
+  } catch { showToast('error', '加载用户列表失败'); }
+}
+
+async function fetchPatients() {
+  try {
+    const res = await fetch('/api/admin/patients');
+    const json = await res.json();
+    const tbody = document.getElementById('patientsTable');
+    if (!json.data || json.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="py-16 text-center text-gray-400">暂无患者数据</td></tr>`; return;
+    }
+    tbody.innerHTML = json.data.map(p => `
+      <tr class="hover:bg-blue-50/50 transition-colors">
+        <td class="px-5 py-3.5"><input type="checkbox"></td>
+        <td class="px-5 py-3.5 font-mono text-blue-600 font-bold text-xs">${p.patient_id}</td>
+        <td class="px-5 py-3.5 font-medium">${p.name}</td>
+        <td class="px-5 py-3.5">${p.gender}</td>
+        <td class="px-5 py-3.5 text-sm">${p.date_of_birth || '-'}</td>
+        <td class="px-5 py-3.5 font-mono text-xs">${p.policy_id || '-'}</td>
+        <td class="px-5 py-3.5">${p.insurance_company}</td>
+        <td class="px-5 py-3.5"><span class="${p.status === 'active' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'} border px-2 py-0.5 rounded text-xs font-bold">${p.status === 'active' ? '活跃' : '停用'}</span></td>
+        <td class="px-5 py-3.5 text-right"><button onclick="switchMenu('visits')" class="text-blue-600 hover:text-blue-800 text-xs">查看就诊记录</button></td>
+      </tr>`).join('');
+  } catch { showToast('error', '加载患者数据失败'); }
+}
+
+async function fetchVisits() {
+  try {
+    const res = await fetch('/api/admin/visits');
+    const json = await res.json();
+    const tbody = document.getElementById('visitsTable');
+    if (!json.data || json.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" class="py-16 text-center text-gray-400">暂无就诊记录</td></tr>`; return;
+    }
+    tbody.innerHTML = json.data.map(v => `
+      <tr class="hover:bg-blue-50/50 transition-colors">
+        <td class="px-5 py-3.5 font-mono text-xs">${v.visit_id}</td>
+        <td class="px-5 py-3.5 font-medium">${v.patient_name || v.patient_id}</td>
+        <td class="px-5 py-3.5">${v.hospital_name || v.hospital_code}</td>
+        <td class="px-5 py-3.5 text-sm">${v.visit_date}</td>
+        <td class="px-5 py-3.5">${v.department}</td>
+        <td class="px-5 py-3.5">${v.diagnosis}</td>
+        <td class="px-5 py-3.5 font-mono text-red-600 text-sm">${v.amount}</td>
+        <td class="px-5 py-3.5 font-mono text-green-600 text-sm">${v.covered_amount}</td>
+        <td class="px-5 py-3.5"><span class="${getStatusClass(v.status)} border px-2 py-0.5 rounded text-xs font-bold">${getStatusLabel(v.status)}</span></td>
+      </tr>`).join('');
+  } catch { showToast('error', '加载就诊记录失败'); }
+}
+
+function getStatusClass(s) { return {'pending':'bg-yellow-50 text-yellow-600 border-yellow-200','completed':'bg-green-50 text-green-600 border-green-200','claimed':'bg-blue-50 text-blue-600 border-blue-200'}[s] || 'bg-gray-50 text-gray-500 border-gray-200'; }
+function getStatusLabel(s) { return {'pending':'待处理','completed':'已完成','claimed':'已报销'}[s] || s; }
+
+async function fetchQRHistory() {
+  try {
+    const res = await fetch('/api/admin/qrcode/history');
+    const json = await res.json();
+    const tbody = document.getElementById('qrHistoryTable');
+    if (!json.data || json.data.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="py-16 text-center text-gray-400">暂无签到记录</td></tr>`; return;
+    }
+    tbody.innerHTML = json.data.map(q => `
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-5 py-3.5 font-mono text-xs">${q.qr_code}</td>
+        <td class="px-5 py-3.5">${q.hospital_name || q.hospital_code}</td>
+        <td class="px-5 py-3.5">${q.patient_id || '-'}</td>
+        <td class="px-5 py-3.5">${q.patient_name || '-'}</td>
+        <td class="px-5 py-3.5"><span class="${getQRStatusClass(q.status)} border px-2 py-0.5 rounded text-xs font-bold">${getQRStatusLabel(q.status)}</span></td>
+        <td class="px-5 py-3.5 text-xs text-gray-400">${q.checked_in_at ? new Date(q.checked_in_at).toLocaleString('zh-CN') : '-'}</td>
+      </tr>`).join('');
+  } catch { showToast('error', '加载签到记录失败'); }
+}
+
+function getQRStatusClass(s) { return {'unused':'bg-gray-50 text-gray-500 border-gray-200','used':'bg-green-50 text-green-600 border-green-200','expired':'bg-red-50 text-red-600 border-red-200'}[s] || 'bg-gray-50 text-gray-500 border-gray-200'; }
+function getQRStatusLabel(s) { return {'unused':'未使用','used':'已签到','expired':'已过期'}[s] || s; }
+
+async function generateQRCode() {
+  const hospital_code = document.getElementById('qrHospitalCode').value;
+  try {
+    const res = await fetch('/api/admin/qrcode/generate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ hospital_code })
+    });
+    const json = await res.json();
+    if (json.code === '10000') {
+      document.getElementById('currentQRCode').innerHTML = `<div class="text-4xl mb-3">✅</div><div id="qrContent" class="font-mono text-xs text-blue-600 break-all">${json.data.qr_code}</div>`;
+      showToast('success', '二维码生成成功');
+      fetchQRHistory();
+    } else { showToast('error', json.msg || '生成失败'); }
+  } catch { showToast('error', '生成失败'); }
+}
+
+async function checkinWithQR() {
+  const qr_code = document.getElementById('qrCodeInput').value;
+  const patient_id = document.getElementById('qrPatientId').value;
+  if (!qr_code || !patient_id) { showToast('error', '请填写二维码内容和患者ID'); return; }
+  try {
+    const res = await fetch('/api/admin/qrcode/checkin', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ qr_code, patient_id })
+    });
+    const json = await res.json();
+    if (json.code === '10000') {
+      showToast('success', `签到成功！患者: ${json.data.patient_name}`);
+      document.getElementById('qrCodeInput').value = '';
+      document.getElementById('qrPatientId').value = '';
+      fetchQRHistory();
+    } else { showToast('error', json.msg || '签到失败'); }
+  } catch { showToast('error', '签到失败'); }
+}
+
+// ===== MODAL FUNCTIONS =====
+function openModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+
+function showAddHospitalModal() {
+  openModal(`
+    <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-bold text-gray-800">添加医院</h3></div>
+    <div class="p-6 space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">医院编码 *</label><input type="text" id="m-hcode" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="如: H004"></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">医院名称 *</label><input type="text" id="m-hname" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">英文名称</label><input type="text" id="m-hname-en" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">繁体名称</label><input type="text" id="m-hname-tc" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">数据空间</label><select id="m-hspace" class="w-full border rounded-lg px-3 py-2 text-sm"><option value="">请选择...</option></select></div>
+    </div>
+    <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">取消</button>
+      <button onclick="submitAddHospital()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">确认添加</button>
+    </div>`);
+  fetch('/api/admin/data-spaces').then(r=>r.json()).then(j=>{
+    const sel=document.getElementById('m-hspace');
+    (j.data||[]).forEach(s=>{sel.innerHTML+=`<option value="${s.space_id}">${s.space_id} - ${s.space_name}</option>`;});
+  });
+}
+async function submitAddHospital() {
+  const body = { hospital_code: document.getElementById('m-hcode').value, hospital_name: document.getElementById('m-hname').value, hospital_name_en: document.getElementById('m-hname-en').value, hospital_name_tc: document.getElementById('m-hname-tc').value, data_space_id: document.getElementById('m-hspace').value };
+  if (!body.hospital_code || !body.hospital_name) { showToast('error','编码和名称为必填项'); return; }
+  try {
+    const res = await fetch('/api/admin/hospitals', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const json = await res.json();
+    if (json.code==='10000') { showToast('success','医院创建成功'); closeModal(); fetchHospitals(); } else { showToast('error', json.msg); }
+  } catch { showToast('error','创建失败'); }
+}
+
+function showAddDataSpaceModal() {
+  openModal(`
+    <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-bold text-gray-800">创建数据空间</h3></div>
+    <div class="p-6 space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">空间ID *</label><input type="text" id="m-sid" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="如: SPACE004"></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">空间名称 *</label><input type="text" id="m-sname" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">描述</label><textarea id="m-sdesc" class="w-full border rounded-lg px-3 py-2 text-sm" rows="3"></textarea></div>
+    </div>
+    <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">取消</button>
+      <button onclick="submitAddDataSpace()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">确认创建</button>
+    </div>`);
+}
+async function submitAddDataSpace() {
+  const body = { space_id: document.getElementById('m-sid').value, space_name: document.getElementById('m-sname').value, description: document.getElementById('m-sdesc').value };
+  if (!body.space_id || !body.space_name) { showToast('error','ID和名称为必填项'); return; }
+  try {
+    const res = await fetch('/api/admin/data-spaces', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const json = await res.json();
+    if (json.code==='10000') { showToast('success','数据空间创建成功'); closeModal(); fetchDataSpaces(); } else { showToast('error', json.msg); }
+  } catch { showToast('error','创建失败'); }
+}
+
+function showAddDataFlowModal() {
+  openModal(`
+    <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-bold text-gray-800">添加数据流</h3></div>
+    <div class="p-6 space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">医院 *</label><select id="m-dfhospital" class="w-full border rounded-lg px-3 py-2 text-sm"><option value="">请选择...</option></select></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">保险公司 *</label><input type="text" id="m-dfinsurance" class="w-full border rounded-lg px-3 py-2 text-sm" value="AIA Hong Kong (友邦)"></div>
+      <div class="flex gap-4">
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="m-dfsign" checked> 签署流开关</label>
+        <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="m-dfsync" checked> 数据同步开关</label>
+      </div>
+    </div>
+    <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">取消</button>
+      <button onclick="submitAddDataFlow()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">确认添加</button>
+    </div>`);
+  fetch('/api/admin/hospitals').then(r=>r.json()).then(j=>{
+    const sel=document.getElementById('m-dfhospital');
+    (j.data||[]).forEach(h=>{sel.innerHTML+=`<option value="${h.hospital_code}">${h.hospital_code} - ${h.hospital_name}</option>`;});
+  });
+}
+async function submitAddDataFlow() {
+  const body = { hospital_code: document.getElementById('m-dfhospital').value, insurance_company: document.getElementById('m-dfinsurance').value, sign_flow_enabled: document.getElementById('m-dfsign').checked?1:0, data_sync_enabled: document.getElementById('m-dfsync').checked?1:0 };
+  if (!body.hospital_code || !body.insurance_company) { showToast('error','医院和保险公司为必填项'); return; }
+  try {
+    const res = await fetch('/api/admin/data-flows', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const json = await res.json();
+    if (json.code==='10000') { showToast('success','数据流创建成功'); closeModal(); fetchDataFlows(); } else { showToast('error', json.msg); }
+  } catch { showToast('error','创建失败'); }
+}
+
+function showAddPatientModal() {
+  openModal(`
+    <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-bold text-gray-800">添加患者</h3></div>
+    <div class="p-6 space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">患者ID *</label><input type="text" id="m-pid" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="如: P004"></div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">姓名 *</label><input type="text" id="m-pname" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">英文姓名</label><input type="text" id="m-pname-en" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">性别</label><select id="m-pgender" class="w-full border rounded-lg px-3 py-2 text-sm"><option value="男">男</option><option value="女">女</option></select></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">出生日期</label><input type="date" id="m-pdob" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">电话</label><input type="text" id="m-pphone" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">保单号</label><input type="text" id="m-ppolicy" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+        <div><label class="block text-xs font-medium text-gray-700 mb-1">保险公司</label><input type="text" id="m-pinsurance" class="w-full border rounded-lg px-3 py-2 text-sm" value="AIA Hong Kong (友邦)"></div>
+      </div>
+    </div>
+    <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">取消</button>
+      <button onclick="submitAddPatient()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">确认添加</button>
+    </div>`);
+}
+async function submitAddPatient() {
+  const body = { patient_id: document.getElementById('m-pid').value, name: document.getElementById('m-pname').value, name_en: document.getElementById('m-pname-en').value, gender: document.getElementById('m-pgender').value, date_of_birth: document.getElementById('m-pdob').value, phone: document.getElementById('m-pphone').value, policy_id: document.getElementById('m-ppolicy').value, insurance_company: document.getElementById('m-pinsurance').value };
+  if (!body.patient_id || !body.name) { showToast('error','患者ID和姓名为必填项'); return; }
+  try {
+    const res = await fetch('/api/admin/patients', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const json = await res.json();
+    if (json.code==='10000') { showToast('success','患者创建成功'); closeModal(); fetchPatients(); } else { showToast('error', json.msg); }
+  } catch { showToast('error','创建失败'); }
+}
+
+function showAddUserModal() {
+  const isHospital = currentUserInfo.role === 'hospital';
+  openModal(`
+    <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-bold text-gray-800">${isHospital ? '添加医院子用户' : '创建用户'}</h3></div>
+    <div class="p-6 space-y-4">
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">用户名 *</label><input type="text" id="m-uname" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">密码 *</label><input type="password" id="m-upass" class="w-full border rounded-lg px-3 py-2 text-sm"></div>
+      ${isHospital ? `<input type="hidden" id="m-urole" value="hospital"><div class="text-sm text-gray-500">角色: 医院用户 (${currentUserInfo.hospital_code})</div>` : `
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">角色 *</label>
+        <select id="m-urole" class="w-full border rounded-lg px-3 py-2 text-sm" onchange="toggleUserFields()">
+          <option value="admin">平台管理员</option><option value="insurance">保司用户</option><option value="hospital">医院用户</option>
+        </select></div>
+      <div id="m-ucompany-wrap"><label class="block text-sm font-medium text-gray-700 mb-1">保司ID</label><input type="text" id="m-ucompany" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="如: AIA"></div>
+      <div id="m-uhospital-wrap" class="hidden"><label class="block text-sm font-medium text-gray-700 mb-1">医院编码</label><input type="text" id="m-uhospital" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="如: H001"></div>`}
+    </div>
+    <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">取消</button>
+      <button onclick="submitAddUser()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">确认创建</button>
+    </div>`);
+}
+function toggleUserFields() {
+  const role = document.getElementById('m-urole').value;
+  const cw = document.getElementById('m-ucompany-wrap');
+  const hw = document.getElementById('m-uhospital-wrap');
+  if (cw) cw.style.display = role === 'insurance' ? '' : 'none';
+  if (hw) hw.style.display = role === 'hospital' ? '' : 'none';
+}
+async function submitAddUser() {
+  const role = document.getElementById('m-urole').value;
+  const body = { username: document.getElementById('m-uname').value, password: document.getElementById('m-upass').value, role };
+  if (!body.username || !body.password) { showToast('error','用户名和密码为必填项'); return; }
+  if (role === 'insurance') body.company_id = document.getElementById('m-ucompany')?.value;
+  if (role === 'hospital' && currentUserInfo.role !== 'hospital') body.hospital_code = document.getElementById('m-uhospital')?.value;
+  try {
+    const res = await fetch('/api/admin/users', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+    const json = await res.json();
+    if (json.code==='10000') { showToast('success','用户创建成功'); closeModal(); fetchUsers(); } else { showToast('error', json.msg); }
+  } catch { showToast('error','创建失败'); }
+}
+
+function showMigrateModal(code, name) {
+  openModal(`
+    <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-bold text-gray-800">迁移数据空间</h3></div>
+    <div class="p-6 space-y-4">
+      <div class="text-sm text-gray-600">医院: <b>${name}</b> (${code})</div>
+      <div><label class="block text-sm font-medium text-gray-700 mb-1">目标数据空间 *</label><select id="m-mspace" class="w-full border rounded-lg px-3 py-2 text-sm"><option value="">请选择...</option></select></div>
+    </div>
+    <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
+      <button onclick="closeModal()" class="px-4 py-2 border rounded-lg text-sm">取消</button>
+      <button onclick="submitMigrate('${code}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">确认迁移</button>
+    </div>`);
+  fetch('/api/admin/data-spaces').then(r=>r.json()).then(j=>{
+    const sel=document.getElementById('m-mspace');
+    (j.data||[]).forEach(s=>{sel.innerHTML+=`<option value="${s.space_id}">${s.space_id} - ${s.space_name}</option>`;});
+  });
+}
+async function submitMigrate(code) {
+  const target = document.getElementById('m-mspace').value;
+  if (!target) { showToast('error','请选择目标空间'); return; }
+  try {
+    const res = await fetch(`/api/admin/hospitals/${code}/migrate-space`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({target_space_id:target}) });
+    const json = await res.json();
+    if (json.code==='10000') { showToast('success','迁移成功'); closeModal(); fetchHospitals(); } else { showToast('error', json.msg); }
+  } catch { showToast('error','迁移失败'); }
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuth();
+  document.getElementById('loginForm').addEventListener('submit', e => {
+    e.preventDefault();
+    login();
+  });
+});
+</script>
+</body>
+</html>
+

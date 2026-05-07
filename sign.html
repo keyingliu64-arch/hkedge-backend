@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HKEdge B2B Management Console - Contract Signing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body { font-family: 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+    
+    /* Language Toggle */
+    .lang-toggle { position: fixed; top: 12px; right: 24px; z-index: 9999; display: flex; gap: 3px; background: rgba(255,255,255,.95); border-radius: 20px; padding: 3px; box-shadow: 0 2px 10px rgba(0,0,0,.15); }
+    .lang-btn { padding: 5px 14px; border: none; border-radius: 18px; cursor: pointer; font-size: 12px; font-weight: 600; transition: .2s; background: transparent; color: #666; }
+    .lang-btn.active { background: #0d6efd; color: #fff; }
+    
+    /* PDF Viewer */
+    .pdf-container { display: flex; gap: 0; background: #fff; min-height: 100vh; }
+    .pdf-sidebar { width: 280px; border-right: 1px solid #e8e8e8; padding: 20px; flex-shrink: 0; background: #fafbfc; }
+    .pdf-sidebar .meta-label { font-size: 11px; color: #aaa; margin-bottom: 2px; text-transform: uppercase; letter-spacing: .5px; }
+    .pdf-sidebar .meta-value { font-size: 13px; color: #0d6efd; margin-bottom: 14px; font-weight: 500; }
+    .pdf-sidebar h4 { font-size: 13px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #e8e8e8; font-weight: 600; }
+    .signer-mini-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 10px; }
+    .signer-mini-table th { text-align: left; padding: 4px 2px; color: #aaa; font-weight: 400; font-size: 11px; }
+    .signer-mini-table td { padding: 5px 2px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; vertical-align: middle; }
+    .status-dot.green { background: #16a34a; }
+    .status-dot.gray { background: #d1d5db; }
+    .status-dot.orange { background: #f59e0b; }
+    
+    .pdf-body { flex: 1; background: #e5e7eb; display: flex; flex-direction: column; min-height: 100vh; }
+    .pdf-doc { background: #fff; margin: 20px auto; box-shadow: 0 2px 16px rgba(0,0,0,.1); padding: 56px 72px; max-width: 680px; width: 100%; position: relative; }
+    .pdf-doc h1 { text-align: center; font-size: 24px; margin-bottom: 32px; letter-spacing: 2px; }
+    .pdf-doc .doc-field { margin-bottom: 18px; font-size: 15px; line-height: 1.8; }
+    .pdf-doc .doc-field .underline { border-bottom: 1px solid #333; padding-bottom: 1px; }
+    .sig-box { width: 170px; height: 65px; border: 2px dashed #0d6efd; background: rgba(13,110,253,.03); display: flex; align-items: center; justify-content: center; margin-left: auto; margin-top: 20px; position: relative; border-radius: 4px; cursor: pointer; transition: .15s; }
+    .sig-box:hover { background: rgba(13,110,253,.08); }
+    .sig-box .sig-num { position: absolute; top: -1px; left: -1px; background: #0d6efd; color: #fff; font-size: 9px; padding: 1px 6px; border-radius: 0 0 4px 0; }
+    .sig-box.signed { border-style: solid; border-color: #198754; background: rgba(25,135,84,.03); }
+    .sig-box .handwriting { font-family: 'STKaiti', 'KaiTi', 'Noto Serif SC', serif; font-size: 28px; color: #1a1a1a; }
+    .sig-box .sig-meta { position: absolute; right: -6px; top: 100%; margin-top: 4px; font-size: 9.5px; color: #888; text-align: right; white-space: nowrap; line-height: 1.5; }
+    .pdf-actions-bar { display: flex; justify-content: center; gap: 12px; padding: 14px; background: #f8f9fa; border-top: 1px solid #e8e8e8; position: sticky; bottom: 0; }
+    
+    /* Header */
+    .sign-header { background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #3b82f6 100%); color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .sign-header h3 { font-size: 16px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .back-btn { background: rgba(255,255,255,.2); border: none; color: #fff; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: .2s; display: flex; align-items: center; gap: 6px; }
+    .back-btn:hover { background: rgba(255,255,255,.3); }
+    
+    /* Sign Action Panel */
+    .sign-action-panel { background: #fff; padding: 20px; display: flex; flex-direction: column; gap: 14px; border-left: 1px solid #e8e8e8; width: 260px; }
+    .sign-action-panel h4 { font-size: 13px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #e8e8e8; font-weight: 600; }
+    .sign-action-panel .sign-btn { background: linear-gradient(135deg, #0d3b66 0%, #1e40af 100%); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: .2s; }
+    .sign-action-panel .sign-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(13,59,102,.3); }
+    .sign-action-panel .sign-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .sign-action-panel .signer-tag { background: #fff7ed; border: 1px solid #fed7aa; padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; color: #c2410c; }
+    .sign-action-panel .signer-tag .st-icon { font-size: 15px; }
+    
+    /* Signature Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.5); z-index: 10000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+    .modal-overlay.show { display: flex; }
+    .modal { background: #fff; border-radius: 12px; max-width: 95vw; overflow: hidden; box-shadow: 0 16px 48px rgba(0,0,0,.2); display: flex; flex-direction: column; width: 520px; }
+    .modal-header { background: linear-gradient(135deg, #0d3b66, #1e40af); color: #fff; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 16px; font-weight: 600; }
+    .modal-close { background: none; border: none; color: rgba(255,255,255,.8); font-size: 22px; cursor: pointer; transition: .15s; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .modal-close:hover { background: rgba(255,255,255,.15); color: #fff; }
+    .modal-body { padding: 24px; overflow-y: auto; }
+    .modal-footer { padding: 14px 24px; border-top: 1px solid #e8e8e8; display: flex; justify-content: flex-end; gap: 10px; background: #fafbfc; }
+    
+    .btn { padding: 8px 18px; border: 1px solid #d9d9d9; border-radius: 6px; cursor: pointer; font-size: 13px; transition: .15s; display: inline-flex; align-items: center; gap: 6px; font-weight: 500; }
+    .btn-primary { background: #0d6efd; color: #fff; border-color: #0d6efd; }
+    .btn-primary:hover { background: #0b5ed7; }
+    .btn-outline { background: #fff; color: #333; }
+    .btn-outline:hover { border-color: #0d6efd; color: #0d6efd; }
+    
+    /* Canvas */
+    .sig-canvas-container { border: 2px dashed #d9d9d9; border-radius: 8px; padding: 4px; background: #fff; margin-bottom: 14px; }
+    .sig-canvas { width: 100%; height: 160px; display: block; cursor: crosshair; border-radius: 6px; }
+    
+    /* Signature Grid */
+    .sig-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .sig-item { width: 130px; height: 90px; border: 2px dashed #d9d9d9; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: .2s; position: relative; }
+    .sig-item:hover { border-color: #0d6efd; }
+    .sig-item.selected { border-color: #0d6efd; border-style: solid; background: #eff6ff; }
+    .sig-item .sig-text { font-family: 'STKaiti', 'KaiTi', 'Noto Serif SC', serif; font-size: 26px; color: #333; }
+    .sig-item .sig-check { position: absolute; bottom: 4px; right: 6px; color: #0d6efd; font-size: 16px; }
+    .sig-item.add-new { color: #aaa; font-size: 12px; gap: 4px; }
+    .sig-item.add-new .plus { font-size: 22px; color: #bbb; }
+    
+    /* Timer */
+    .timer-badge { background: rgba(0,0,0,.2); padding: 3px 14px; border-radius: 12px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+    
+    /* Tags */
+    .tag { padding: 2px 10px; border-radius: 10px; font-size: 11.5px; font-weight: 500; display: inline-block; white-space: nowrap; }
+    .tag-green { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .tag-orange { background: #fff7ed; color: #f59e0b; border: 1px solid #fed7aa; }
+    .tag-blue { background: #eff6ff; color: #0d6efd; border: 1px solid #bfdbfe; }
+    
+    /* Hidden */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" onclick="setLang('zh-CN')" id="langZh-CN">简体</button>
+  <button class="lang-btn" onclick="setLang('zh-TW')" id="langZh-TW">繁體</button>
+  <button class="lang-btn" onclick="setLang('en')" id="langEn">EN</button>
+</div>
+
+<div class="sign-header">
+  <button class="back-btn" onclick="location.href='index.html'">← <span data-i18n="back">返回管理控制台</span></button>
+  <h3>✍️ <span data-i18n="signing_page">合约签署</span> — <span id="pageContractTitle" data-i18n="loading">加载中...</span></h3>
+  <div class="timer-badge" id="signTimer" style="display: none;">⏱ <span id="signTimerText">5:00</span></div>
+</div>
+
+<div class="pdf-container">
+  <div class="pdf-sidebar">
+    <span class="meta-label" data-i18n="contract_id">合约编号</span>
+    <span class="meta-value" id="contractId">HKEDGE-20260428-001</span>
+    
+    <span class="meta-label" data-i18n="contract_status">合约状态</span>
+    <span class="meta-value" id="contractStatus">
+      <span class="tag tag-orange" data-i18n="pending_status">等待签署</span>
+    </span>
+    
+    <span class="meta-label" data-i18n="initiator">发起方</span>
+    <span class="meta-value" id="contractInitiator">AIA Hong Kong (友邦)</span>
+    
+    <span class="meta-label" data-i18n="created_date">创建日期</span>
+    <span class="meta-value" id="contractCreatedDate">2026-04-28</span>
+    
+    <span class="meta-label" data-i18n="deadline">截止日期</span>
+    <span class="meta-value" id="contractDeadline">2026-05-28</span>
+    
+    <h4 data-i18n="signers_title">签署方列表</h4>
+    <table class="signer-mini-table">
+      <thead>
+        <tr>
+          <th data-i18n="order">顺序</th>
+          <th data-i18n="signer">签署方</th>
+          <th data-i18n="status">状态</th>
+        </tr>
+      </thead>
+      <tbody id="signerList">
+        <!-- Populated by JS -->
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="pdf-body">
+    <div class="pdf-doc" id="docContent">
+      <h1 data-i18n="contract_title">医疗直赔服务协议</h1>
+      
+      <div class="doc-field" id="contractFieldPartyA">
+        <span data-i18n="party_a">甲方（医疗机构）：</span>
+        <span class="underline" id="partyAName">香港大学深圳医院</span>
+        <span style="margin-left: 40px;" data-i18n="hospital_code">医院编码：</span>
+        <span class="underline" id="partyACode">H001</span>
+      </div>
+      
+      <div class="doc-field" id="contractFieldPartyB">
+        <span data-i18n="party_b">乙方（保险公司）：</span>
+        <span class="underline" id="partyBName">AIA Hong Kong (友邦)</span>
+      </div>
+      
+      <div class="doc-field" data-i18n="contract_p1">
+        鉴于甲方为合法设立并存续的医疗机构，乙方为合法设立并存续的保险公司，双方本着平等互利、共同发展的原则，就患者医疗数据跨境传输及直赔结算事宜，达成如下协议：
+      </div>
+      
+      <div class="doc-field">
+        <span data-i18n="content_1">一、合作内容</span><br>
+        <span data-i18n="content_1_1">1. 乙方同意将甲方纳入其医疗保险直赔网络。乙方承保的客户（以下简称"被保险人"）在甲方就诊时，符合保险责任范围内的医疗费用，由乙方直接向甲方支付。</span><br>
+        <span data-i18n="content_1_2">2. 甲方同意，根据本协议的约定，向乙方提供必要的医疗数据，以便乙方进行理赔核算。</span><br>
+        <span class="text-gray-500 text-sm">(This Direct Billing Agreement is entered into by and between the Hospital and the Insurance Provider. The Hospital agrees to provide medical services to the Insurance Provider's customers, with direct claim settlement.)</span>
+      </div>
+      
+      <div class="doc-field">
+        <span data-i18n="content_2">二、直赔结算限额</span><br>
+        <span data-i18n="limit_outpatient">门诊结算限额：每次就诊最高 5,000 港币。</span><br>
+        <span data-i18n="limit_emergency">急诊结算限额：每次就诊最高 20,000 港币。</span><br>
+        <span data-i18n="limit_inpatient">住院结算限额：每日最高 15,000 港币。</span><br>
+        <span class="text-amber-600 text-sm font-semibold">📌 Clinic limit: 5,000 HKD; Emergency limit: 20,000 HKD; Inpatient limit: 15,000 HKD/day</span>
+      </div>
+      
+      <div class="doc-field">
+        <span data-i18n="content_3">三、数据安全与保密</span><br>
+        <span data-i18n="data_protection">双方承诺，对于在本协议履行过程中获得的患者个人信息和医疗数据，将严格保密，并遵守相关法律法规的要求。</span>
+      </div>
+      
+      <div class="doc-field">
+        <span data-i18n="content_4">四、协议期限</span><br>
+        <span data-i18n="term">本协议自签署之日起生效，有效期为 1 年，期满后自动续期。</span>
+      </div>
+      
+      <div class="doc-field" style="margin-top: 50px;">
+        <span data-i18n="signing_ack">双方确认已仔细阅读并理解本协议的全部内容，自愿签署。</span><br><br>
+        <div style="display: flex; justify-content: space-between;">
+          <div style="text-align: center;">
+            <div data-i18n="party_a_sign">甲方（医疗机构）签章：</div>
+            <div class="sig-box" id="sigBoxA" onclick="openSignModal('A')">
+              <span class="sig-num">1</span>
+              <span id="sigTextA" data-i18n="pending_sign">等待签署</span>
+            </div>
+            <div id="sigMetaA" class="sig-meta" style="display: none;"></div>
+          </div>
+          <div style="text-align: center;">
+            <div data-i18n="party_b_sign">乙方（保险公司）签章：</div>
+            <div class="sig-box" id="sigBoxB" onclick="openSignModal('B')">
+              <span class="sig-num">2</span>
+              <span id="sigTextB" data-i18n="pending_sign">等待签署</span>
+            </div>
+            <div id="sigMetaB" class="sig-meta" style="display: none;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="pdf-actions-bar">
+      <button class="btn btn-outline" onclick="location.href='index.html'">← <span data-i18n="back_console">返回控制台</span></button>
+      <button class="btn btn-primary" id="btnSignMain" onclick="openSignModal()" data-i18n="sign_now">✓ 立即签署</button>
+    </div>
+  </div>
+  
+  <div class="sign-action-panel" id="actionPanel">
+    <h4 data-i18n="sign_actions">签署操作</h4>
+    
+    <p class="text-sm text-gray-500" data-i18n="sign_instruction">请先阅读左侧条款，确认无误后点击下方按钮进行数字签名。</p>
+    
+    <div class="signer-tag" id="currentSignerTag">
+      <span class="st-icon">🏥</span>
+      <span id="currentSignerName">香港大学深圳医院</span>
+      <span class="tag tag-orange" id="signerStatusBadge" data-i18n="signer_pending">待签署</span>
+    </div>
+    
+    <button class="sign-btn" id="doSignBtn" onclick="openSignModal()">
+      <i class="fas fa-pen-nib"></i> <span data-i18n="sign_as">以签署方身份签署</span>
+    </button>
+    
+    <div class="mt-4">
+      <div class="text-xs text-gray-500 mb-2" data-i18n="available_signatures">可用签名：</div>
+      <div class="sig-grid">
+        <div class="sig-item selected" onclick="selectSignature(1)">
+          <span class="sig-text">签 章</span>
+          <span class="sig-check">✓</span>
+        </div>
+        <div class="sig-item" onclick="selectSignature(2)">
+          <span class="sig-text">授权签章</span>
+        </div>
+        <div class="sig-item add-new" onclick="toast('info',t('demo'))">
+          <span class="plus">+</span>
+          <span data-i18n="add_sign">添加新签名</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Signature Modal -->
+<div class="modal-overlay" id="mSign">
+<div class="modal">
+  <div class="modal-header">
+    <h3 data-i18n="sign_modal_title">✍️ 请在此处签名</h3>
+    <button class="modal-close" onclick="closeM('mSign')">×</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-group mb-4">
+      <label class="block text-sm font-semibold mb-2" data-i18n="sign_method">选择签名方式</label>
+      <div class="flex gap-4 flex-wrap">
+        <label class="flex items-center gap-2">
+          <input type="radio" name="sigMethod" value="canvas" checked class="text-blue-600">
+          <span data-i18n="method_draw">屏幕手写签名</span>
+        </label>
+        <label class="flex items-center gap-2 opacity-50 cursor-not-allowed">
+          <input type="radio" name="sigMethod" value="ukey" disabled>
+          <span>UKEY</span>
+        </label>
+        <label class="flex items-center gap-2 opacity-50 cursor-not-allowed">
+          <input type="radio" name="sigMethod" value="cloud" disabled>
+          <span data-i18n="method_cloud">云证书</span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="form-group mb-4">
+      <label class="block text-sm font-semibold mb-2" data-i18n="sign_area">签名区域</label>
+      <div class="sig-canvas-container">
+        <canvas id="sigCanvas" class="sig-canvas" width="460" height="150"></canvas>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="clearCanvas()">
+        <i class="fas fa-eraser"></i> <span data-i18n="clear_sign">重写</span>
+      </button>
+    </div>
+    
+    <div id="signProgressArea" class="text-amber-600 text-sm" data-i18n="sign_ready">准备就绪，请点击「确认签署」</div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeM('mSign')" data-i18n="cancel">取消</button>
+    <button class="btn btn-primary" onclick="submitSignature()">✓ <span data-i18n="confirm_sign">确认签署</span></button>
+  </div>
+</div>
+</div>
+
+<script>
+// ===========================
+// I18N SYSTEM
+// ===========================
+let lang = localStorage.getItem('hkedge_lang') || 'zh-CN';
+const L = {
+'zh-CN': {
+    back: '返回管理控制台',
+    signing_page: '合约签署',
+    loading: '加载中...',
+    contract_id: '合约编号',
+    contract_status: '合约状态',
+    pending_status: '等待签署',
+    initiator: '发起方',
+    created_date: '创建日期',
+    deadline: '截止日期',
+    signers_title: '签署方列表',
+    order: '顺序',
+    signer: '签署方',
+    status: '状态',
+    contract_title: '医疗直赔服务协议',
+    party_a: '甲方（医疗机构）：',
+    hospital_code: '医院编码：',
+    party_b: '乙方（保险公司）：',
+    contract_p1: '鉴于甲方为合法设立并存续的医疗机构，乙方为合法设立并存续的保险公司，双方本着平等互利、共同发展的原则，就患者医疗数据跨境传输及直赔结算事宜，达成如下协议：',
+    content_1: '一、合作内容',
+    content_1_1: '1. 乙方同意将甲方纳入其医疗保险直赔网络。乙方承保的客户（以下简称"被保险人"）在甲方就诊时，符合保险责任范围内的医疗费用，由乙方直接向甲方支付。',
+    content_1_2: '2. 甲方同意，根据本协议的约定，向乙方提供必要的医疗数据，以便乙方进行理赔核算。',
+    content_2: '二、直赔结算限额',
+    limit_outpatient: '门诊结算限额：每次就诊最高 5,000 港币。',
+    limit_emergency: '急诊结算限额：每次就诊最高 20,000 港币。',
+    limit_inpatient: '住院结算限额：每日最高 15,000 港币。',
+    content_3: '三、数据安全与保密',
+    data_protection: '双方承诺，对于在本协议履行过程中获得的患者个人信息和医疗数据，将严格保密，并遵守相关法律法规的要求。',
+    content_4: '四、协议期限',
+    term: '本协议自签署之日起生效，有效期为 1 年，期满后自动续期。',
+    signing_ack: '双方确认已仔细阅读并理解本协议的全部内容，自愿签署。',
+    party_a_sign: '甲方（医疗机构）签章：',
+    party_b_sign: '乙方（保险公司）签章：',
+    pending_sign: '等待签署',
+    back_console: '返回控制台',
+    sign_now: '✓ 立即签署',
+    sign_actions: '签署操作',
+    sign_instruction: '请先阅读左侧条款，确认无误后点击下方按钮进行数字签名。',
+    signer_pending: '待签署',
+    sign_as: '以签署方身份签署',
+    available_signatures: '可用签名：',
+    add_sign: '添加新签名',
+    sign_modal_title: '✍️ 请在此处签名',
+    sign_method: '选择签名方式',
+    method_draw: '屏幕手写签名',
+    method_cloud: '云证书',
+    sign_area: '签名区域',
+    clear_sign: '重写',
+    sign_ready: '准备就绪，请点击「确认签署」',
+    cancel: '取消',
+    confirm_sign: '确认签署',
+    demo: '功能演示中...',
+    toast_signed: '✅ 签署成功！',
+    signing_progress: '正在签署...',
+    getting_cert: '获取签名证书...',
+    pre_checking: '签署前检查...',
+    downloading: '文件下载中...',
+    audit: '审计轨迹功能演示中...',
+    signed: '已签署',
+    not_signed: '未签署',
+    viewing: '查看',
+    downloading_file: '下载合同文件',
+    audit_trail: '审计轨迹'
+},
+'zh-TW': {
+    back: '返回管理控制台',
+    signing_page: '合約簽署',
+    loading: '載入中...',
+    contract_id: '合約編號',
+    contract_status: '合約狀態',
+    pending_status: '等待簽署',
+    initiator: '發起方',
+    created_date: '建立日期',
+    deadline: '截止日期',
+    signers_title: '簽署方列表',
+    order: '順序',
+    signer: '簽署方',
+    status: '狀態',
+    contract_title: '醫療直賠服務協議',
+    party_a: '甲方（醫療機構）：',
+    hospital_code: '醫院編碼：',
+    party_b: '乙方（保險公司）：',
+    contract_p1: '鑒於甲方為合法設立並存續的醫療機構，乙方為合法設立並存續的保險公司，雙方本著平等互利、共同發展的原則，就患者醫療數據跨境傳輸及直賠結算事宜，達成如下協議：',
+    content_1: '一、合作內容',
+    content_1_1: '1. 乙方同意將甲方納入其醫療保險直賠網絡。乙方承保的客戶（以下簡稱"被保險人"）在甲方就診時，符合保險責任範圍內的醫療費用，由乙方直接向甲方支付。',
+    content_1_2: '2. 甲方同意，根據本協議的約定，向乙方提供必要的醫療數據，以便乙方進行理賠核算。',
+    content_2: '二、直賠結算限額',
+    limit_outpatient: '門診結算限額：每次就診最高 5,000 港幣。',
+    limit_emergency: '急診結算限額：每次就診最高 20,000 港幣。',
+    limit_inpatient: '住院結算限額：每日最高 15,000 港幣。',
+    content_3: '三、數據安全與保密',
+    data_protection: '雙方承諾，對於在本協議履行過程中獲得的患者個人信息和醫療數據，將嚴格保密，並遵守相關法律法規的要求。',
+    content_4: '四、協議期限',
+    term: '本協議自簽署之日起生效，有效期為 1 年，期滿後自動續期。',
+    signing_ack: '雙方確認已仔細閱讀並理解本協議的全部內容，自願簽署。',
+    party_a_sign: '甲方（醫療機構）簽章：',
+    party_b_sign: '乙方（保險公司）簽章：',
+    pending_sign: '等待簽署',
+    back_console: '返回控制台',
+    sign_now: '✓ 立即簽署',
+    sign_actions: '簽署操作',
+    sign_instruction: '請先閱讀左側條款，確認無誤後點擊下方按鈕進行數字簽名。',
+    signer_pending: '待簽署',
+    sign_as: '以簽署方身份簽署',
+    available_signatures: '可用簽名：',
+    add_sign: '添加新簽名',
+    sign_modal_title: '✍️ 請在此處簽名',
+    sign_method: '選擇簽名方式',
+    method_draw: '屏幕手寫簽名',
+    method_cloud: '雲證書',
+    sign_area: '簽名區域',
+    clear_sign: '重寫',
+    sign_ready: '準備就緒，請點擊「確認簽署」',
+    cancel: '取消',
+    confirm_sign: '確認簽署',
+    demo: '功能演示中...',
+    toast_signed: '✅ 簽署成功！',
+    signing_progress: '正在簽署...',
+    getting_cert: '獲取簽名證書...',
+    pre_checking: '簽署前檢查...',
+    downloading: '文件下載中...',
+    audit: '審計軌跡功能演示中...',
+    signed: '已簽署',
+    not_signed: '未簽署',
+    viewing: '查看',
+    downloading_file: '下載合同文件',
+    audit_trail: '審計軌跡'
+},
+'en': {
+    back: 'Back to Console',
+    signing_page: 'Contract Signing',
+    loading: 'Loading...',
+    contract_id: 'Contract ID',
+    contract_status: 'Status',
+    pending_status: 'Pending Signing',
+    initiator: 'Initiator',
+    created_date: 'Created Date',
+    deadline: 'Deadline',
+    signers_title: 'Signers',
+    order: 'Order',
+    signer: 'Signer',
+    status: 'Status',
+    contract_title: 'Medical Direct Billing Service Agreement',
+    party_a: 'Party A (Healthcare Facility):',
+    hospital_code: 'Hospital Code:',
+    party_b: 'Party B (Insurance Company):',
+    contract_p1: 'Whereas Party A is a lawfully established and existing healthcare facility, and Party B is a lawfully established and existing insurance company, both parties, in the spirit of equality, mutual benefit, and common development, hereby agree on the following terms regarding the cross-border transmission of patient medical data and direct billing settlement:',
+    content_1: '1. Cooperation Scope',
+    content_1_1: '1. Party B agrees to include Party A in its medical insurance direct billing network. When Party B\'s insured customers (hereinafter referred to as "the Insured") receive medical treatment at Party A, medical expenses covered by insurance will be directly paid by Party B to Party A.',
+    content_1_2: '2. Party A agrees to provide necessary medical data to Party B in accordance with this Agreement to facilitate claim calculation.',
+    content_2: '2. Direct Billing Limits',
+    limit_outpatient: 'Outpatient limit: 5,000 HKD per visit.',
+    limit_emergency: 'Emergency limit: 20,000 HKD per visit.',
+    limit_inpatient: 'Inpatient limit: 15,000 HKD per day.',
+    content_3: '3. Data Security and Confidentiality',
+    data_protection: 'Both parties undertake to keep strictly confidential all patient personal information and medical data obtained during the performance of this Agreement, and to comply with relevant laws and regulations.',
+    content_4: '4. Agreement Term',
+    term: 'This Agreement shall take effect from the date of signing and shall be valid for 1 year. It shall be automatically renewed upon expiration.',
+    signing_ack: 'Both parties confirm that they have carefully read and fully understand all content of this Agreement and sign voluntarily.',
+    party_a_sign: 'Party A (Healthcare Facility):',
+    party_b_sign: 'Party B (Insurance Company):',
+    pending_sign: 'Pending Sign',
+    back_console: 'Back to Console',
+    sign_now: '✓ Sign Now',
+    sign_actions: 'Signing Actions',
+    sign_instruction: 'Please review the terms on the left first, then click the button below to digitally sign.',
+    signer_pending: 'Pending',
+    sign_as: 'Sign as this party',
+    available_signatures: 'Available Signatures:',
+    add_sign: 'Add new',
+    sign_modal_title: '✍️ Please Sign Here',
+    sign_method: 'Select Signing Method',
+    method_draw: 'Screen Handwritten Signature',
+    method_cloud: 'Cloud Certificate',
+    sign_area: 'Signature Area',
+    clear_sign: 'Clear',
+    sign_ready: 'Ready, please click "Confirm Sign"',
+    cancel: 'Cancel',
+    confirm_sign: 'Confirm Sign',
+    demo: 'Feature demo...',
+    toast_signed: '✅ Signed successfully!',
+    signing_progress: 'Signing...',
+    getting_cert: 'Getting signing certificate...',
+    pre_checking: 'Pre-signing checks...',
+    downloading: 'Downloading file...',
+    audit: 'Audit trail feature demo...',
+    signed: 'Signed',
+    not_signed: 'Not signed',
+    viewing: 'View',
+    downloading_file: 'Download Contract',
+    audit_trail: 'Audit Trail'
+}};
+
+function t(key) { return L[lang][key] || key; }
+
+function setLang(l) {
+    lang = l;
+    localStorage.setItem('hkedge_lang', l);
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (L[l][k]) el.textContent = L[l][k];
+    });
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('lang' + l).classList.add('active');
+    renderSigners();
+}
+
+function initLang() { setLang(lang); }
+
+// ===========================
+// DATA
+// ===========================
+const sampleContract = {
+    id: 'HKEDGE-20260428-001',
+    title: '医疗直赔服务协议',
+    partyA: { name: '香港大学深圳医院', code: 'H001', signed: true, sigText: '香港大學深圳醫院', sigDate: '2026-04-28 10:30' },
+    partyB: { name: 'AIA Hong Kong (友邦)', signed: false, sigText: '', sigDate: '' },
+    createdDate: '2026-04-28',
+    deadline: '2026-05-28',
+    initiator: 'AIA Hong Kong (友邦)'
+};
+
+// ===========================
+// CANVAS SIGNATURE
+// ===========================
+let canvas, ctx;
+let isDrawing = false;
+let lastX = 0, lastY = 0;
+
+function initCanvas() {
+    canvas = document.getElementById('sigCanvas');
+    ctx = canvas.getContext('2d');
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#111';
+    
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('touchstart', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseleave', endDraw);
+    canvas.addEventListener('touchend', endDraw);
+}
+
+function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    return { x, y };
+}
+
+function startDraw(e) {
+    isDrawing = true;
+    const p = getPos(e);
+    lastX = p.x;
+    lastY = p.y;
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    const p = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    lastX = p.x;
+    lastY = p.y;
+}
+
+function endDraw() { isDrawing = false; }
+
+function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+// ===========================
+// SIGNING LOGIC
+// ===========================
+let currentSigningParty = 'A';
+
+function openSignModal(party) {
+    if (party) currentSigningParty = party;
+    if ( (party === 'A' && sampleContract.partyA.signed) || (party === 'B' && sampleContract.partyB.signed) ) {
+        toast('info', t('demo'));
+        return;
+    }
+    document.getElementById('mSign').classList.add('show');
+    initCanvas();
+    clearCanvas();
+    document.getElementById('signProgressArea').textContent = t('sign_ready');
+}
+
+function closeM(id) { document.getElementById(id).classList.remove('show'); }
+
+function selectSignature(n) {
+    document.querySelectorAll('.sig-item').forEach(el => el.classList.remove('selected'));
+    event.target.closest('.sig-item').classList.add('selected');
+}
+
+function submitSignature() {
+    document.getElementById('signProgressArea').innerHTML = `
+        <div class="animate-pulse">
+            <span>🟡 ${t('signing_progress')}</span><br>
+            <span class="text-xs">${t('getting_cert')}</span><br>
+            <span class="text-xs">${t('pre_checking')}</span>
+        </div>`;
+    
+    setTimeout(() => {
+        if (currentSigningParty === 'A') {
+            sampleContract.partyA.signed = true;
+            sampleContract.partyA.sigText = '香港大學深圳醫院';
+            sampleContract.partyA.sigDate = new Date().toLocaleString();
+        } else {
+            sampleContract.partyB.signed = true;
+            sampleContract.partyB.sigText = 'AIA Hong Kong (友邦)';
+            sampleContract.partyB.sigDate = new Date().toLocaleString();
+        }
+        
+        updateUI();
+        closeM('mSign');
+        toast('success', t('toast_signed'));
+    }, 1500);
+}
+
+function updateUI() {
+    const sigA = document.getElementById('sigBoxA');
+    const sigAText = document.getElementById('sigTextA');
+    const sigAMeta = document.getElementById('sigMetaA');
+    
+    if (sampleContract.partyA.signed) {
+        sigA.classList.add('signed');
+        sigAText.innerHTML = `<span class="handwriting">${sampleContract.partyA.sigText}</span>`;
+        sigAMeta.innerHTML = `<div><i class="fas fa-check text-green-600"></i> ${t('signed')}</div><div>${sampleContract.partyA.sigDate}</div>`;
+        sigAMeta.style.display = 'block';
+    }
+    
+    const sigB = document.getElementById('sigBoxB');
+    const sigBText = document.getElementById('sigTextB');
+    const sigBMeta = document.getElementById('sigMetaB');
+    
+    if (sampleContract.partyB.signed) {
+        sigB.classList.add('signed');
+        sigBText.innerHTML = `<span class="handwriting">${sampleContract.partyB.sigText}</span>`;
+        sigBMeta.innerHTML = `<div><i class="fas fa-check text-green-600"></i> ${t('signed')}</div><div>${sampleContract.partyB.sigDate}</div>`;
+        sigBMeta.style.display = 'block';
+    }
+    
+    if (sampleContract.partyA.signed && sampleContract.partyB.signed) {
+        document.getElementById('contractStatus').innerHTML = `<span class="tag tag-green">${t('signed')}</span>`;
+    }
+    
+    renderSigners();
+}
+
+function renderSigners() {
+    const tbody = document.getElementById('signerList');
+    tbody.innerHTML = `
+        <tr>
+            <td>1</td>
+            <td>${sampleContract.partyA.name}<br><span class="text-xs text-gray-400">${sampleContract.partyA.code}</span></td>
+            <td>${sampleContract.partyA.signed ? '<span class="status-dot green"></span> '+t('signed') : '<span class="status-dot orange"></span> '+t('not_signed')}</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>${sampleContract.partyB.name}</td>
+            <td>${sampleContract.partyB.signed ? '<span class="status-dot green"></span> '+t('signed') : '<span class="status-dot orange"></span> '+t('not_signed')}</td>
+        </tr>`;
+}
+
+// ===========================
+// UTILS
+// ===========================
+function toast(type, msg) {
+    const el = document.createElement('div');
+    el.style.cssText = `
+        position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
+        background: ${type==='success'?'#f0fdf4':'#eff6ff'};
+        color: ${type==='success'?'#16a34a':'#0d6efd'};
+        border: 1px solid ${type==='success'?'#bbf7d0':'#bfdbfe'};
+        padding: 10px 20px; border-radius: 8px; z-index: 10001;
+        font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.12);
+    `;
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.style.opacity = '0', 2200);
+    setTimeout(() => document.body.removeChild(el), 2600);
+}
+
+function loadPageFromURL() {
+    const params = new URLSearchParams(location.search);
+    const id = params.get('id');
+    if (id) {
+        document.getElementById('contractId').textContent = id;
+    }
+    renderSigners();
+}
+
+// ===========================
+// INIT
+// ===========================
+document.addEventListener('DOMContentLoaded', () => {
+    initLang();
+    loadPageFromURL();
+});
+</script>
+
+</body>
+</html>

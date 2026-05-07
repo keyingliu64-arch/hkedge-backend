@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HKEdge B2B Management Console - 使用指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+        .lang-toggle { display: flex; gap: 3px; background: rgba(255,255,255,.2); border-radius: 20px; padding: 3px; }
+        .lang-btn { padding: 4px 10px; border: none; border-radius: 16px; cursor: pointer; font-size: 11px; font-weight: 600; transition: .2s; background: transparent; color: rgba(255,255,255,.8); }
+        .lang-btn.active { background: white; color: #1e40af; }
+        .gradient-bg { background: linear-gradient(135deg, #0f172a 0%, #1e40af 50%, #3b82f6 100%); }
+        .card-hover { transition: all 0.3s; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .step-number { width: 50px; height: 50px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem; }
+        .role-admin { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); }
+        .role-insurance { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .role-hospital { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .flow-card { background: white; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
+        .flow-header { padding: 20px 24px; color: white; }
+        .flow-step { position: relative; padding-left: 40px; padding-bottom: 24px; border-left: 3px solid #e5e7eb; margin-left: 12px; }
+        .flow-step:last-child { border-left-color: transparent; padding-bottom: 0; }
+        .flow-step::before { content: ''; position: absolute; left: -13px; top: 0; width: 24px; height: 24px; background: #3b82f6; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .flow-step.admin::before { background: #7c3aed; }
+        .flow-step.insurance::before { background: #10b981; }
+        .flow-step.hospital::before { background: #f59e0b; }
+        .flow-step-content { background: #f9fafb; border-radius: 12px; padding: 16px; margin-left: 8px; }
+        .flow-arrow { position: absolute; left: -36px; top: 24px; color: #9ca3af; font-size: 20px; }
+        .nav-link { transition: all 0.2s; }
+        .nav-link:hover { transform: translateY(-2px); }
+        .flow-tab { padding: 12px 24px; border-radius: 8px 8px 0 0; cursor: pointer; transition: all 0.2s; display: inline-block; }
+        .flow-tab.active { background: white; color: inherit; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); }
+        .flow-tab:not(.active) { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.8); }
+        .flow-tab:hover:not(.active) { background: rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- 顶部导航 -->
+    <nav class="gradient-bg text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                    </div>
+                    <span class="text-xl font-bold">HKEdge B2B Management Console</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="#overview" class="hover:text-blue-200 transition" data-i18n="overview">概述</a>
+                    <a href="#roles" class="hover:text-blue-200 transition" data-i18n="roles">角色说明</a>
+                    <a href="#user-flows" class="hover:text-blue-200 transition" data-i18n="user_flows">使用流程</a>
+                    <a href="#features" class="hover:text-blue-200 transition" data-i18n="features">功能模块</a>
+                    <a href="#quickstart" class="hover:text-blue-200 transition" data-i18n="quickstart">快速开始</a>
+                    <a href="index.html" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition" data-i18n="enter_console">进入管理控制台</a>
+                    <div class="lang-toggle">
+                      <button class="lang-btn active" onclick="setLang('zh-CN')" id="langZh-CN">简体</button>
+                      <button class="lang-btn" onclick="setLang('zh-TW')" id="langZh-TW">繁體</button>
+                      <button class="lang-btn" onclick="setLang('en')" id="langEn">EN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero 区域 -->
+    <section class="gradient-bg text-white py-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold mb-6" data-i18n="platform_title">粤港澳大湾区跨境医疗数据签署平台</h1>
+                <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto" data-i18n="platform_desc">HKEdge 提供医院与保险公司之间的电子合约签署、数据管理与医疗费用直赔结算，打造高效、安全的 B2B 医疗数据服务</p>
+                <div class="flex justify-center space-x-4">
+                    <a href="#user-flows" class="bg-white text-blue-600 hover:bg-blue-50 px-8 py-3 rounded-lg font-semibold transition" data-i18n="view_flows">查看使用流程</a>
+                    <a href="index.html" class="border-2 border-white text-white hover:bg-white/20 px-8 py-3 rounded-lg font-semibold transition" data-i18n="enter_console">进入管理控制台</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心特性 -->
+    <section id="overview" class="py-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-4" data-i18n="core_features">核心特性</h2>
+            <p class="text-gray-600 text-center mb-12 max-w-2xl mx-auto" data-i18n="core_desc">从合约签署到数据管理，全方位满足医疗 B2B 业务需求</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-file-contract text-2xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2" data-i18n="contract_signing">电子合约签署</h3>
+                    <p class="text-gray-600">DocuSign 级的 B2B 电子合约签署流程，支持多方签名与审计追踪</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-users text-2xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2" data-i18n="permission_system">三级权限体系</h3>
+                    <p class="text-gray-600">平台管理员、保司用户、医院用户，数据隔离，权责清晰</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-database text-2xl text-orange-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2" data-i18n="data_management">数据空间管理</h3>
+                    <p class="text-gray-600">医院数据空间迁移、数据流配置，灵活管理数据流转</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                        <i class="fas fa-credit-card text-2xl text-purple-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2" data-i18n="direct_payment">医疗直赔结算</h3>
+                    <p class="text-gray-600">合约完成后，支持医疗费用直赔结算，简化理赔流程</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 角色说明 -->
+    <section id="roles" class="py-20 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-4">角色说明</h2>
+            <p class="text-gray-600 text-center mb-12">三种用户角色，各司其职</p>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="role-admin text-white p-6">
+                        <h3 class="text-xl font-bold mb-2">平台管理员</h3>
+                        <p class="text-white/80">Admin - 全局管理</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>管理所有医院与保司</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>配置数据空间与数据流</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>查看所有审计日志</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>创建用户账号</span>
+                            </li>
+                        </ul>
+                        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm text-gray-600"><strong>测试账号：</strong> admin / admin123</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="role-insurance text-white p-6">
+                        <h3 class="text-xl font-bold mb-2">保司用户</h3>
+                        <p class="text-white/80">Insurance - 保险公司</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>发起电子合约</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>查看关联医院数据</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>签署电子合约</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>查看理赔与就诊数据</span>
+                            </li>
+                        </ul>
+                        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm text-gray-600"><strong>测试账号：</strong> aia_admin / aia123</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div class="role-hospital text-white p-6">
+                        <h3 class="text-xl font-bold mb-2">医院用户</h3>
+                        <p class="text-white/80">Hospital - 医疗机构</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>查看本院数据</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>管理患者与就诊</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>签署电子合约</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                                <span>二维码签到管理</span>
+                            </li>
+                        </ul>
+                        <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm text-gray-600"><strong>测试账号：</strong> hku_admin / hku123</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 用户流程 - 三角色详细流程 -->
+    <section id="user-flows" class="py-20">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-4">角色使用流程</h2>
+            <p class="text-gray-600 text-center mb-12">根据不同角色，查看详细的操作流程</p>
+
+            <!-- Tab 导航 -->
+            <div class="flex justify-center gap-2 mb-8">
+                <span class="flow-tab active font-semibold" onclick="showFlow('admin')">
+                    <i class="fas fa-crown mr-2"></i>平台管理员
+                </span>
+                <span class="flow-tab font-semibold" onclick="showFlow('insurance')">
+                    <i class="fas fa-building mr-2"></i>保险公司
+                </span>
+                <span class="flow-tab font-semibold" onclick="showFlow('hospital')">
+                    <i class="fas fa-hospital mr-2"></i>医院用户
+                </span>
+            </div>
+
+            <!-- 平台管理员流程 -->
+            <div id="flow-admin" class="flow-content">
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="flow-card">
+                        <div class="flow-header gradient-to-r role-admin">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                <i class="fas fa-crown"></i>平台管理员 - 日常操作流程
+                            </h3>
+                            <p class="text-white/80 text-sm mt-1">admin / admin123</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flow-step admin">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-sign-in-alt text-purple-500 mr-2"></i>登录系统</h4>
+                                    <p class="text-gray-600 text-sm">使用 admin / admin123 登录管理控制台</p>
+                                </div>
+                            </div>
+                            <div class="flow-step admin">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-hospital text-purple-500 mr-2"></i>管理医院数据</h4>
+                                    <p class="text-gray-600 text-sm mb-2">进入「医院管理」模块：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 查看所有医院列表（H001-H008）</li>
+                                        <li>• 管理医院信息（编码、名称、数据空间）</li>
+                                        <li>• 执行数据空间迁移</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step admin">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-database text-purple-500 mr-2"></i>配置数据空间</h4>
+                                    <p class="text-gray-600 text-sm mb-2">进入「数据空间」模块：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 创建新的数据空间</li>
+                                        <li>• 绑定医院到数据空间</li>
+                                        <li>• 配置数据流转规则</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step admin">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-file-contract text-purple-500 mr-2"></i>管理合约</h4>
+                                    <p class="text-gray-600 text-sm mb-2">进入「合约列表」模块：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 查看所有合约状态</li>
+                                        <li>• 监督签署进度</li>
+                                        <li>• 查看审计轨迹</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step admin">
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-clipboard-list text-purple-500 mr-2"></i>审计日志</h4>
+                                    <p class="text-gray-600 text-sm mb-2">进入「审计日志」模块：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 查看所有操作记录</li>
+                                        <li>• 按角色、医院、时间筛选</li>
+                                        <li>• 追踪敏感操作</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flow-card">
+                        <div class="flow-header gradient-to-r from-purple-600 to-purple-800">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                <i class="fas fa-network-wired"></i>数据流管理流程
+                            </h3>
+                            <p class="text-white/80 text-sm mt-1">配置医院与保司之间的数据交互</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flow-step admin">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-sitemap text-purple-500 mr-2"></i>创建数据空间</h4>
+                                    <p class="text-gray-600 text-sm">创建 SPACE001、SPACE002 等数据空间</p>
+                                </div>
+                            </div>
+                            <div class="flow-step admin">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-hospital text-purple-500 mr-2"></i>绑定医院</h4>
+                                    <p class="text-gray-600 text-sm mb-2">将医院绑定到数据空间：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• SPACE001: H001, H002, H005, H008</li>
+                                        <li>• SPACE002: H003, H004, H006, H007</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step admin">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-exchange-alt text-purple-500 mr-2"></i>配置数据流</h4>
+                                    <p class="text-gray-600 text-sm mb-2">设置医院与保司之间的数据交互：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 开启/关闭签署数据流</li>
+                                        <li>• 配置数据同步规则</li>
+                                        <li>• 设置存储位置</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step admin">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-chart-pie text-purple-500 mr-2"></i>监控数据统计</h4>
+                                    <p class="text-gray-600 text-sm mb-2">通过看板监控：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 数据流数量</li>
+                                        <li>• 合约完成率</li>
+                                        <li>• 理赔统计</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step admin">
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-history text-purple-500 mr-2"></i>记录迁移日志</h4>
+                                    <p class="text-gray-600 text-sm">记录所有空间迁移操作，便于追溯</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 保险公司流程 -->
+            <div id="flow-insurance" class="flow-content hidden">
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="flow-card">
+                        <div class="flow-header gradient-to-r from-green-600 to-green-800">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                <i class="fas fa-building"></i>保险公司 - 合约签署流程
+                            </h3>
+                            <p class="text-white/80 text-sm mt-1">aia_admin / aia123</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flow-step insurance">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-sign-in-alt text-green-500 mr-2"></i>登录系统</h4>
+                                    <p class="text-gray-600 text-sm">使用 aia_admin / aia123 登录</p>
+                                </div>
+                            </div>
+                            <div class="flow-step insurance">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-plus-circle text-green-500 mr-2"></i>发起合约</h4>
+                                    <p class="text-gray-600 text-sm mb-2">点击「发起签署」按钮：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 选择目标医院（甲方）</li>
+                                        <li>• 确认保险公司信息</li>
+                                        <li>• 选择通知方式（SMS/Email）</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step insurance">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-clock text-green-500 mr-2"></i>等待医院签署</h4>
+                                    <p class="text-gray-600 text-sm">合约状态变为「Pending Hospital」，等待医院方签署</p>
+                                </div>
+                            </div>
+                            <div class="flow-step insurance">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-pen-nib text-green-500 mr-2"></i>本方签署</h4>
+                                    <p class="text-gray-600 text-sm mb-2">医院签署后，进入「合约列表」：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 查看合约详情</li>
+                                        <li>• 使用 Canvas 签名</li>
+                                        <li>• 提交签署</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step insurance">
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-check-double text-green-500 mr-2"></i>合约完成</h4>
+                                    <p class="text-gray-600 text-sm">状态变为「Completed」，可进行直赔结算</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flow-card">
+                        <div class="flow-header gradient-to-r from-emerald-600 to-emerald-800">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                <i class="fas fa-chart-line"></i>数据查看与分析
+                            </h3>
+                            <p class="text-white/80 text-sm mt-1">查看入站数据与理赔统计</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flow-step insurance">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-hospital text-green-500 mr-2"></i>查看关联医院</h4>
+                                    <p class="text-gray-600 text-sm mb-2">在看板查看：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 关联医院列表</li>
+                                        <li>• 数据流配置状态</li>
+                                        <li>• 医院签署状态</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step insurance">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-file-invoice-dollar text-green-500 mr-2"></i>入站数据</h4>
+                                    <p class="text-gray-600 text-sm mb-2">进入各模块查看：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 就诊记录（关联医院）</li>
+                                        <li>• 理赔记录与状态</li>
+                                        <li>• 待处理理赔</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step insurance">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-tasks text-green-500 mr-2"></i>处理理赔</h4>
+                                    <p class="text-gray-600 text-sm mb-2">理赔管理：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 查看理赔详情</li>
+                                        <li>• 审核理赔申请</li>
+                                        <li>• 完成理赔结算</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step insurance">
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-receipt text-green-500 mr-2"></i>直赔结算</h4>
+                                    <p class="text-gray-600 text-sm">合约完成后，可通过 POS 接口进行医疗直赔</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 医院用户流程 -->
+            <div id="flow-hospital" class="flow-content hidden">
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="flow-card">
+                        <div class="flow-header gradient-to-r from-orange-600 to-orange-800">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                <i class="fas fa-hospital"></i>医院用户 - 日常操作流程
+                            </h3>
+                            <p class="text-white/80 text-sm mt-1">hku_admin / hku123 (H001)</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flow-step hospital">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-sign-in-alt text-orange-500 mr-2"></i>登录系统</h4>
+                                    <p class="text-gray-600 text-sm">使用 hku_admin / hku123 登录</p>
+                                </div>
+                            </div>
+                            <div class="flow-step hospital">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-qrcode text-orange-500 mr-2"></i>二维码签到</h4>
+                                    <p class="text-gray-600 text-sm mb-2">进入「二维码签到」模块：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 生成签到二维码</li>
+                                        <li>• 打印或发送二维码给患者</li>
+                                        <li>• 查看签到记录</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step hospital">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-user-plus text-orange-500 mr-2"></i>患者管理</h4>
+                                    <p class="text-gray-600 text-sm mb-2">进入「患者管理」模块：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 登记新患者信息</li>
+                                        <li>• 关联保单信息</li>
+                                        <li>• 查看患者历史</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step hospital">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-stethoscope text-orange-500 mr-2"></i>就诊记录</h4>
+                                    <p class="text-gray-600 text-sm mb-2">进入「就诊记录」模块：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 记录就诊信息</li>
+                                        <li>• 关联患者与保单</li>
+                                        <li>• 提交理赔申请</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step hospital">
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-cloud-upload-alt text-orange-500 mr-2"></i>出站数据</h4>
+                                    <p class="text-gray-600 text-sm">查看发送到数据空间的数据</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flow-card">
+                        <div class="flow-header gradient-to-r from-amber-600 to-amber-800">
+                            <h3 class="text-xl font-bold flex items-center gap-2">
+                                <i class="fas fa-file-signature"></i>合约签署流程
+                            </h3>
+                            <p class="text-white/80 text-sm mt-1">接收并签署来自保险公司的合约</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flow-step hospital">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-bell text-orange-500 mr-2"></i>接收签署邀请</h4>
+                                    <p class="text-gray-600 text-sm">收到来自保险公司的合约签署通知</p>
+                                </div>
+                            </div>
+                            <div class="flow-step hospital">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-file-alt text-orange-500 mr-2"></i>查看合约</h4>
+                                    <p class="text-gray-600 text-sm mb-2">进入「合约列表」：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 查看合约详情内容</li>
+                                        <li>• 确认医院与保司信息</li>
+                                        <li>• 检查合约条款</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step hospital">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-pen-nib text-orange-500 mr-2"></i>进行签署</h4>
+                                    <p class="text-gray-600 text-sm mb-2">点击「签署」按钮：</p>
+                                    <ul class="text-sm text-gray-500 space-y-1 ml-4">
+                                        <li>• 使用 Canvas 签名</li>
+                                        <li>• 或上传签名图片</li>
+                                        <li>• 确认并提交</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="flow-step hospital">
+                                <i class="fas fa-arrow-down flow-arrow"></i>
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-check-circle text-orange-500 mr-2"></i>等待保险签署</h4>
+                                    <p class="text-gray-600 text-sm">签署完成，等待保险公司签署（状态：Pending Insurance）</p>
+                                </div>
+                            </div>
+                            <div class="flow-step hospital">
+                                <div class="flow-step-content">
+                                    <h4 class="font-bold text-gray-800 mb-2"><i class="fas fa-handshake text-orange-500 mr-2"></i>合约生效</h4>
+                                    <p class="text-gray-600 text-sm">双方签署完成，状态变为「Completed」，可进行直赔</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 合约状态流转图 -->
+            <div class="mt-12 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-2xl border border-blue-200">
+                <h3 class="text-xl font-bold text-center text-gray-800 mb-6">
+                    <i class="fas fa-project-diagram text-blue-600 mr-2"></i>合约状态流转图
+                </h3>
+                <div class="flex flex-wrap justify-center items-center gap-4">
+                    <div class="bg-white px-6 py-4 rounded-xl shadow-md text-center">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-file-medical text-yellow-600"></i>
+                        </div>
+                        <p class="font-medium text-gray-700">待发起</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-400 text-2xl"></i>
+                    <div class="bg-white px-6 py-4 rounded-xl shadow-md text-center">
+                        <div class="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-hospital text-yellow-600"></i>
+                        </div>
+                        <p class="font-medium text-gray-700">Pending Hospital</p>
+                        <p class="text-xs text-gray-500">等待医院签署</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-400 text-2xl"></i>
+                    <div class="bg-white px-6 py-4 rounded-xl shadow-md text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-building text-blue-600"></i>
+                        </div>
+                        <p class="font-medium text-gray-700">Pending Insurance</p>
+                        <p class="text-xs text-gray-500">等待保险签署</p>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-400 text-2xl"></i>
+                    <div class="bg-white px-6 py-4 rounded-xl shadow-md text-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <i class="fas fa-check-double text-green-600"></i>
+                        </div>
+                        <p class="font-medium text-gray-700">Completed</p>
+                        <p class="text-xs text-gray-500">合约完成</p>
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600 text-sm">
+                        <i class="fas fa-info-circle text-blue-500 mr-1"></i>
+                        只有状态为 <span class="font-bold text-green-600">Completed</span> 的合约才可进行医疗直赔结算
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能模块 -->
+    <section id="features" class="py-20 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-4">功能模块</h2>
+            <p class="text-gray-600 text-center mb-12">完整的管理功能，满足 B2B 医疗业务需求</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-file-contract text-blue-500 mr-3"></i>合约管理
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-blue-400 mr-2"></i>发起新电子合约</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-blue-400 mr-2"></i>合约列表查看与筛选</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-blue-400 mr-2"></i>Canvas 手写签名</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-blue-400 mr-2"></i>审计轨迹追踪</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-hospital text-green-500 mr-3"></i>医院管理
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-green-400 mr-2"></i>医院信息管理（使用医院编码）</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-green-400 mr-2"></i>数据空间迁移</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-green-400 mr-2"></i>多语言支持</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-database text-purple-500 mr-3"></i>数据空间与数据流
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-purple-400 mr-2"></i>数据空间创建与管理</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-purple-400 mr-2"></i>数据流配置（医院-保司）</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-purple-400 mr-2"></i>数据同步开关控制</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-user text-orange-500 mr-3"></i>患者与就诊
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-orange-400 mr-2"></i>患者信息管理</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-orange-400 mr-2"></i>就诊记录</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-orange-400 mr-2"></i>医疗直赔结算</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-qrcode text-cyan-500 mr-3"></i>二维码签到
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-cyan-400 mr-2"></i>生成签到二维码</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-cyan-400 mr-2"></i>扫码签到</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-cyan-400 mr-2"></i>签到历史查询</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <i class="fas fa-chart-line text-rose-500 mr-3"></i>统计与审计
+                    </h3>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-rose-400 mr-2"></i>仪表盘统计（角色过滤）</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-rose-400 mr-2"></i>审计日志</li>
+                        <li class="flex items-center"><i class="fas fa-circle text-xs text-rose-400 mr-2"></i>数据空间统计</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 快速开始 -->
+    <section id="quickstart" class="py-20">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-4">快速开始</h2>
+            <p class="text-gray-600 text-center mb-12">三步启动平台，快速体验功能</p>
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <h3 class="text-xl font-semibold text-gray-800 mb-6">启动步骤</h3>
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <div class="step-number shrink-0 mr-4" style="width: 40px; height: 40px; font-size: 1rem;">1</div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">进入正确目录并安装依赖</h4>
+                            <code class="block bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto">
+cd "/Users/caro/Desktop/HKEdge_Management console update_0428/hkedge-server_0428"<br>
+npm install
+                            </code>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="step-number shrink-0 mr-4" style="width: 40px; height: 40px; font-size: 1rem;">2</div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">启动服务器</h4>
+                            <code class="block bg-gray-900 text-green-400 p-4 rounded-lg text-sm">
+node server.js
+                            </code>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="step-number shrink-0 mr-4" style="width: 40px; height: 40px; font-size: 1rem;">3</div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-1">访问应用</h4>
+                            <p class="text-gray-600">打开浏览器访问 <a href="index.html" class="text-blue-600 hover:underline">http://localhost:3000/index.html</a>，使用 admin/admin123 登录</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 grid md:grid-cols-2 gap-6">
+                <a href="index.html" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-center p-6 rounded-xl shadow-lg transition">
+                    <i class="fas fa-desktop text-3xl mb-3"></i>
+                    <div class="font-semibold text-lg">进入管理控制台</div>
+                    <div class="text-blue-100 text-sm mt-1">index.html</div>
+                </a>
+                <a href="sign.html" class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-center p-6 rounded-xl shadow-lg transition">
+                    <i class="fas fa-file-contract text-3xl mb-3"></i>
+                    <div class="font-semibold text-lg">合约签署页面</div>
+                    <div class="text-green-100 text-sm mt-1">sign.html</div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 常见问题 -->
+    <section class="py-20 bg-gray-100">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-4">常见问题</h2>
+            <div class="space-y-4">
+                <div class="bg-white p-6 rounded-xl shadow">
+                    <h3 class="font-semibold text-gray-800 mb-2">Q: 为什么需要使用医院编码？</h3>
+                    <p class="text-gray-600">A: 使用医院编码作为唯一标识可以避免因医院名称变更、多语言问题导致的数据不一致，提高系统稳定性。</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow">
+                    <h3 class="font-semibold text-gray-800 mb-2">Q: 如何进行直赔结算？</h3>
+                    <p class="text-gray-600">A: 需要先完成医院与保司之间的合约签署，状态变为 "Completed" 后，才可通过 POS 接口进行直赔结算。</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow">
+                    <h3 class="font-semibold text-gray-800 mb-2">Q: 支持 APP 集成吗？</h3>
+                    <p class="text-gray-600">A: 是的，sign.html 支持通过 URL 参数 id=contractId 直接打开指定合约，方便 APP 跳转。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 text-gray-400 py-12">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center space-x-2 text-white mb-2">
+                        <div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <span class="font-bold">HKEdge</span>
+                    </div>
+                    <p class="text-sm">粤港澳大湾区跨境医疗数据签署平台</p>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="#overview" class="hover:text-white transition">概述</a>
+                    <a href="#roles" class="hover:text-white transition">角色</a>
+                    <a href="#features" class="hover:text-white transition">功能</a>
+                    <a href="index.html" class="hover:text-white transition">控制台</a>
+                </div>
+            </div>
+            <div class="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
+                <p>© 2026 HKEdge Project</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let lang = localStorage.getItem('hkedge_lang') || 'zh-CN';
+        const L = {
+        'zh-CN': {
+            overview: '概述',
+            roles: '角色说明',
+            user_flows: '使用流程',
+            features: '功能模块',
+            quickstart: '快速开始',
+            enter_console: '进入管理控制台',
+            platform_title: '粤港澳大湾区跨境医疗数据签署平台',
+            platform_desc: 'HKEdge 提供医院与保险公司之间的电子合约签署、数据管理与医疗费用直赔结算，打造高效、安全的 B2B 医疗数据服务',
+            view_flows: '查看使用流程',
+            core_features: '核心特性',
+            core_desc: '从合约签署到数据管理，全方位满足医疗 B2B 业务需求',
+            contract_signing: '电子合约签署',
+            permission_system: '三级权限体系',
+            data_management: '数据空间管理',
+            data_flow: '三方数据流',
+            direct_payment: '医疗直赔结算',
+            role_intro: '角色说明',
+            role_intro_desc: '平台包含三种用户角色，各自拥有不同的权限和功能',
+            admin_role: '平台管理员',
+            admin_desc: '最高权限角色，负责系统整体配置和管理',
+            insurance_role: '保险公司用户',
+            insurance_desc: '保险公司用户，可管理医院、发起合约签署',
+            hospital_role: '医院用户',
+            hospital_desc: '医院用户，处理签署任务、管理本院数据',
+            user_flow_title: '角色使用流程',
+            user_flow_desc: '根据不同角色，查看详细的操作流程',
+            admin_flow: '平台管理员',
+            insurance_flow: '保险公司',
+            hospital_flow: '保险公司',
+            login_system: '登录系统',
+            manage_hospital: '管理医院数据',
+            config_space: '配置数据空间',
+            manage_contract: '管理合约',
+            audit_logs: '审计日志',
+            data_flow_manage: '数据流管理流程',
+            config_interaction: '配置医院与保司之间的数据交互',
+            create_user: '创建用户',
+            user_management: '用户管理',
+            view_overview: '查看数据概览',
+            daily_ops: '日常操作流程',
+            sign_contract: '签署合约',
+            contract_complete: '合约完成',
+            data_view: '数据查看与分析',
+            view_hospital: '查看关联医院',
+            incoming_data: '入站数据',
+            process_claims: '处理理赔',
+            direct_payment: '直赔结算',
+            qrcode_checkin: '二维码签到',
+            generate_qrcode: '生成签到二维码',
+            checkin_records: '查看签到记录',
+            patient_management: '患者管理',
+            visit_records: '就诊记录管理',
+            claim_settlement: '理赔结算',
+            wait_insurance: '等待保险签署',
+            contract_active: '合约生效',
+            contract_flow_title: '合约状态流转图',
+            pending_initiate: '待发起',
+            pending_hospital: '等待医院签署',
+            pending_insurance: '等待保险签署',
+            contract_completed: '合约完成',
+            completed_desc: '只有状态为 Completed 的合约才可进行医疗直赔结算',
+            contract_module: '合约管理',
+            hospital_module: '医院管理',
+            space_module: '数据空间与数据流',
+            qrcode_module: '二维码签到',
+            stats_module: '统计与审计',
+            quick_start: '快速开始',
+            quick_desc: '三步启动平台，快速体验功能',
+            step_title: '启动步骤',
+            step_1: '进入正确目录并安装依赖',
+            step_2: '启动服务器',
+            step_3: '访问应用',
+            enter_console_btn: '进入管理控制台',
+            sign_page: '合约签署页面',
+            faq_title: '常见问题',
+            faq_q1: 'Q: 为什么需要使用医院编码？',
+            faq_a1: 'A: 使用医院编码作为唯一标识可以避免因医院名称变更、多语言问题导致的数据不一致，提高系统稳定性。',
+            faq_q2: 'Q: 如何进行直赔结算？',
+            faq_a2: 'A: 需要先完成医院与保司之间的合约签署，状态变为 "Completed" 后，才可通过 POS 接口进行直赔结算。',
+            faq_q3: 'Q: 支持 APP 集成吗？',
+            faq_a3: 'A: 是的，sign.html 支持通过 URL 参数 id=contractId 直接打开指定合约，方便 APP 跳转。',
+            footer_title: '粤港澳大湾区跨境医疗数据签署平台',
+            overview_link: '概述',
+            roles_link: '角色',
+            features_link: '功能',
+            console_link: '控制台'
+        },
+        'zh-TW': {
+            overview: '概述',
+            roles: '角色說明',
+            user_flows: '使用流程',
+            features: '功能模組',
+            quickstart: '快速開始',
+            enter_console: '進入管理控制台',
+            platform_title: '粤港澳大灣區跨境醫療數據簽署平台',
+            platform_desc: 'HKEdge 提供醫院與保險公司之間的電子合約簽署、數據管理與醫療費用直賠結算，打造高效、安全的 B2B 醫療數據服務',
+            view_flows: '查看使用流程',
+            core_features: '核心特性',
+            core_desc: '從合約簽署到數據管理，全方位滿足醫療 B2B 業務需求',
+            contract_signing: '電子合約簽署',
+            permission_system: '三級權限體系',
+            data_management: '數據空間管理',
+            data_flow: '三方數據流',
+            direct_payment: '醫療直賠結算',
+            role_intro: '角色說明',
+            role_intro_desc: '平台包含三種用戶角色，各自擁有不同的權限和功能',
+            admin_role: '平台管理員',
+            admin_desc: '最高權限角色，負責系統整體配置和管理',
+            insurance_role: '保險公司用戶',
+            insurance_desc: '保險公司用戶，可管理醫院、發起合約簽署',
+            hospital_role: '醫院用戶',
+            hospital_desc: '醫院用戶，處理簽署任務、管理本院數據',
+            user_flow_title: '角色使用流程',
+            user_flow_desc: '根據不同角色，查看詳細的操作流程',
+            admin_flow: '平台管理員',
+            insurance_flow: '保險公司',
+            hospital_flow: '醫院用戶',
+            login_system: '登錄系統',
+            manage_hospital: '管理醫院數據',
+            config_space: '配置數據空間',
+            manage_contract: '管理合約',
+            audit_logs: '審計日誌',
+            data_flow_manage: '數據流管理流程',
+            config_interaction: '配置醫院與保司之間的數據交互',
+            create_user: '創建用戶',
+            user_management: '用戶管理',
+            view_overview: '查看數據概覽',
+            daily_ops: '日常操作流程',
+            sign_contract: '簽署合約',
+            contract_complete: '合約完成',
+            data_view: '數據查看與分析',
+            view_hospital: '查看關聯醫院',
+            incoming_data: '入站數據',
+            process_claims: '處理理賠',
+            direct_payment: '直賠結算',
+            qrcode_checkin: '二維碼簽到',
+            generate_qrcode: '生成簽到二維碼',
+            checkin_records: '查看簽到記錄',
+            patient_management: '患者管理',
+            visit_records: '就診記錄管理',
+            claim_settlement: '理賠結算',
+            wait_insurance: '等待保險簽署',
+            contract_active: '合約生效',
+            contract_flow_title: '合約狀態流轉圖',
+            pending_initiate: '待發起',
+            pending_hospital: '等待醫院簽署',
+            pending_insurance: '等待保險簽署',
+            contract_completed: '合約完成',
+            completed_desc: '只有狀態為 Completed 的合約才可進行醫療直賠結算',
+            contract_module: '合約管理',
+            hospital_module: '醫院管理',
+            space_module: '數據空間與數據流',
+            qrcode_module: '二維碼簽到',
+            stats_module: '統計與審計',
+            quick_start: '快速開始',
+            quick_desc: '三步啟動平台，快速體驗功能',
+            step_title: '啟動步驟',
+            step_1: '進入正確目錄並安裝依賴',
+            step_2: '啟動服務器',
+            step_3: '訪問應用',
+            enter_console_btn: '進入管理控制台',
+            sign_page: '合約簽署頁面',
+            faq_title: '常見問題',
+            faq_q1: 'Q: 為什麼需要使用醫院編碼？',
+            faq_a1: 'A: 使用醫院編碼作為唯一標識可以避免因醫院名稱變更、多語言問題導致的數據不一致，提高系統穩定性。',
+            faq_q2: 'Q: 如何進行直賠結算？',
+            faq_a2: 'A: 需要先完成醫院與保司之間的合約簽署，狀態變為 "Completed" 後，才可通過 POS 介面進行直賠結算。',
+            faq_q3: 'Q: 支援 APP 集成嗎？',
+            faq_a3: 'A: 是的，sign.html 支援通過 URL 參數 id=contractId 直接打開指定合約，方便 APP 跳轉。',
+            footer_title: '粤港澳大灣區跨境醫療數據簽署平台',
+            overview_link: '概述',
+            roles_link: '角色',
+            features_link: '功能',
+            console_link: '控制台'
+        },
+        'en': {
+            overview: 'Overview',
+            roles: 'Roles',
+            user_flows: 'User Flows',
+            features: 'Features',
+            quickstart: 'Quick Start',
+            enter_console: 'Enter Console',
+            platform_title: 'GBA Cross-border Medical Data Signing Platform',
+            platform_desc: 'HKEdge provides electronic contract signing, data management, and direct medical billing between hospitals and insurance companies, creating an efficient and secure B2B medical data service',
+            view_flows: 'View User Flows',
+            core_features: 'Core Features',
+            core_desc: 'From contract signing to data management, fully meet medical B2B business needs',
+            contract_signing: 'Electronic Contract Signing',
+            permission_system: 'Three-level Permission',
+            data_management: 'Data Space Management',
+            data_flow: 'Three-party Data Flow',
+            direct_payment: 'Direct Medical Billing',
+            role_intro: 'Role Introduction',
+            role_intro_desc: 'The platform includes three user roles, each with different permissions and functions',
+            admin_role: 'System Admin',
+            admin_desc: 'Highest permission role, responsible for overall system configuration',
+            insurance_role: 'Insurance User',
+            insurance_desc: 'Insurance company user, can manage hospitals and initiate contract signing',
+            hospital_role: 'Hospital User',
+            hospital_desc: 'Hospital user, handles signing tasks and manages hospital data',
+            user_flow_title: 'User Role Flows',
+            user_flow_desc: 'View detailed operation flows based on different roles',
+            admin_flow: 'System Admin',
+            insurance_flow: 'Insurance',
+            hospital_flow: 'Hospital',
+            login_system: 'Login',
+            manage_hospital: 'Manage Hospitals',
+            config_space: 'Configure Data Spaces',
+            manage_contract: 'Manage Contracts',
+            audit_logs: 'Audit Logs',
+            data_flow_manage: 'Data Flow Management',
+            config_interaction: 'Configure data interaction between hospitals and insurers',
+            create_user: 'Create Users',
+            user_management: 'User Management',
+            view_overview: 'View Dashboard',
+            daily_ops: 'Daily Operations',
+            sign_contract: 'Sign Contract',
+            contract_complete: 'Contract Complete',
+            data_view: 'Data Analysis',
+            view_hospital: 'View Associated Hospitals',
+            incoming_data: 'Incoming Data',
+            process_claims: 'Process Claims',
+            direct_payment: 'Direct Billing',
+            qrcode_checkin: 'QR Check-in',
+            generate_qrcode: 'Generate QR Code',
+            checkin_records: 'View Check-in Records',
+            patient_management: 'Patient Management',
+            visit_records: 'Visit Records',
+            claim_settlement: 'Claim Settlement',
+            wait_insurance: 'Waiting for Insurance Sign',
+            contract_active: 'Contract Active',
+            contract_flow_title: 'Contract Status Flow',
+            pending_initiate: 'Pending Initiation',
+            pending_hospital: 'Pending Hospital',
+            pending_insurance: 'Pending Insurance',
+            contract_completed: 'Completed',
+            completed_desc: 'Only contracts with "Completed" status can proceed with direct medical billing',
+            contract_module: 'Contract Management',
+            hospital_module: 'Hospital Management',
+            space_module: 'Data Spaces & Flows',
+            qrcode_module: 'QR Check-in',
+            stats_module: 'Statistics & Audit',
+            quick_start: 'Quick Start',
+            quick_desc: 'Three steps to start the platform',
+            step_title: 'Getting Started',
+            step_1: 'Navigate to directory and install dependencies',
+            step_2: 'Start server',
+            step_3: 'Access application',
+            enter_console_btn: 'Enter Management Console',
+            sign_page: 'Contract Signing Page',
+            faq_title: 'FAQ',
+            faq_q1: 'Q: Why use hospital code?',
+            faq_a1: 'A: Using hospital code as the unique identifier avoids data inconsistency caused by name changes and multi-language issues.',
+            faq_q2: 'Q: How to process direct billing?',
+            faq_a2: 'A: Complete contract signing between hospital and insurance first. Only "Completed" contracts can proceed with direct billing.',
+            faq_q3: 'Q: Is APP integration supported?',
+            faq_a3: 'A: Yes, sign.html supports direct contract opening via URL parameter id=contractId for easy APP integration.',
+            footer_title: 'GBA Cross-border Medical Data Signing Platform',
+            overview_link: 'Overview',
+            roles_link: 'Roles',
+            features_link: 'Features',
+            console_link: 'Console'
+        }};
+
+        function t(key) { return L[lang][key] || key; }
+
+        function setLang(l) {
+            lang = l;
+            localStorage.setItem('hkedge_lang', l);
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const k = el.getAttribute('data-i18n');
+                if (L[l][k]) el.textContent = L[l][k];
+            });
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('lang' + l)?.classList.add('active');
+        }
+
+        function initLang() {
+            const saved = localStorage.getItem('hkedge_lang');
+            if (saved) {
+                lang = saved;
+                setLang(saved);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initLang();
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        function showFlow(role) {
+            document.querySelectorAll('.flow-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('flow-' + role).classList.remove('hidden');
+            document.querySelectorAll('.flow-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
